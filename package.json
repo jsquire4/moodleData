@@ -1,0 +1,16 @@
+{
+  "name": "moodledatareader",
+  "version": "1.0.0",
+  "private": true,
+  "description": "gets relevant info from the moodle database",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jacob Squire",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.15.4",
+    "express-handlebars": "^3.0.0"
+  }
+}

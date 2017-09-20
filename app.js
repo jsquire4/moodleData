@@ -15,6 +15,7 @@
   var users = require('./routes/users');
   var mongoStore = require('connect-mongo')(session);
   var fs = require('fs');
+  require('dotenv').config();
 
 
 
@@ -31,7 +32,6 @@
 
 
 // DATABASE CONNECTION FOR LOGIN
-  
   mongoose.connect('mongodb://' + process.env.MLAB_USER + ':' + process.env.MLAB_PASS + '@ds141464.mlab.com:41464/datareaderprofiles');
   var db = mongoose.connection;
 

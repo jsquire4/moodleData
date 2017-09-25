@@ -7,6 +7,14 @@ var Schema = mongoose.Schema;
 
 var userSchema = new Schema({
 
+  first: {
+    type: String
+  },
+
+  last: {
+    type: String
+  },
+
   username: {
       type: String,
       index: true
@@ -19,6 +27,11 @@ var userSchema = new Schema({
   email: {
       type: String
   },
+
+  access: {
+    type: Boolean,
+    default: false
+  }
 
   admin: {
       type: Boolean,
@@ -40,16 +53,34 @@ module.exports.createUser = function(newUser, callback) {
 
 module.exports.getUserByUsername = function(username, callback){
   var query = {username: username};
-  User.findOne(query, callback);
+  return User.findOne(query, callback);
 }
 
-module.exports.comparePassword = function(candidatePassword, hash, callback){
-  bcrypt.compare(candidatePassword, hash, function(err, isMatch) {
+module.exports.comparePassword = function(compPass, hash, callback){
+  bcrypt.compare(compPass, hash, function(err, isMatch) {
     if(err) throw err;
     callback(null, isMatch);
   });
 }
 
-module.exports.getUserById = function(username, callback){
+module.exports.getUserById = function(id, callback){
   User.findById(id, callback);
+  console.log(id);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

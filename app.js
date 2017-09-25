@@ -13,8 +13,9 @@
   var mongoose = require('mongoose');
   var routes = require('./routes/index');
   var users = require('./routes/users');
-  var mongoStore = require('connect-mongo')(session);
+  var MongoStore = require('connect-mongo')(session);
   var fs = require('fs');
+
   require('dotenv').config();
 
 
@@ -41,10 +42,14 @@
   app.use(cookieParser());
 
   app.use(session({
-    secret: "mysecretkeyherethatnoonewillguessoreverfindoutforsure",
-    resave: false,
+    secret: process.env.SESSION_SECRET,
+    resave: true,
     saveUninitialized: false,
-    cookie: { secure: true }
+    cookie: { secure: false },
+    store: new MongoStore({
+    url: 'mongodb://' + process.env.MLAB_USER + ':' + process.env.MLAB_PASS + '@ds141464.mlab.com:41464/datareaderprofiles',
+    collection: 'sessions'
+  })
   }));
 
   app.use(passport.initialize());
@@ -70,10 +75,11 @@
 
   app.use(flash());
 
-  app.use(function (req, res, next){
+  app.use(function(req, res, next){
     res.locals.success_msg = req.flash('success_msg');
     res.locals.error_msg = req.flash('error_msg');
     res.locals.error = req.flash('error');
+    res.locals.user = req.user || null;
     next();
   });
 
@@ -89,11 +95,11 @@
   //   res.render('404');
   // });
 
-  // app.use(function(err, req, res, next){
-  //   console.error(err.stack);
-  //   res.status(500);
-  //   res.render('500');
-  // });
+  app.use(function(err, req, res, next){
+    console.error(err.stack);
+    res.status(500);
+    res.render('500');
+  });
 
 
 // PORT LISTENING 

@@ -1,0 +1,25 @@
+<h2>Welcome to the verification page for helping losers like you report better</h2>
+
+{{#if users}}
+  <form class = "user-permissions-approval" method = "post" action = "/users/verification">
+  {{#each users}}
+      <div class = "user-permissions-approval">
+        <p class = "user-verification-name">{{user.name}}</p>
+        {{#if users.access}}
+          <input type = "checkbox" class = "access-checkbox" name = "access-approval-{{user.id}}" checked> Allowed access to reports</br>
+        {{else}}
+          <input type = "checkbox" class = "access-checkbox" name = "access-approval-{{user.id}}"> Allowed access to reports</br>
+        {{/if}}
+
+        {{#if users.admin}}
+          <input type = "checkbox" class = "allow-admin" name = "admin-approval-{{user.id}}" checked>Give admin privilages</br>
+        {{else}}
+          <input type = "checkbox" class = "allow-admin" name = "admin-approval-{{user.id}}">Give admin privilages</br>
+        {{/if}}
+      </div>
+  {{/each}}
+    <button type = "submit" class = "btn btn-default">Save Permissions</button>
+  </form>
+{{else}}
+  <h2>Nothing to see here!</h2>
+{{/if}}

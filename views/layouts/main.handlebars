@@ -22,6 +22,10 @@
       <div class = "alert alert-danger">{{error}}</div>
     {{/if}}
 
+    {{#if user}}
+      <h1>Hello {{user.username}}</h1>
+    {{/if}}
+
     {{{body}}}
     
     

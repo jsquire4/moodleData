@@ -1,20 +1,20 @@
 <h2>Welcome to the verification page for helping losers like you report better</h2>
 
-{{#if users}}
+{{#if pendingUsers}}
   <form class = "user-permissions-approval" method = "post" action = "/users/verification">
-  {{#each users}}
+  {{#each pendingUsers}}
       <div class = "user-permissions-approval">
-        <p class = "user-verification-name">{{user.name}}</p>
-        {{#if users.access}}
-          <input type = "checkbox" class = "access-checkbox" name = "access-approval-{{user.id}}" checked> Allowed access to reports</br>
+        <p class = "user-verification-name">{{first}} {{last}}</p>
+        {{#if access}}
+          <input type = "checkbox" class = "access-checkbox" name = "access-approval-{{id}}" checked> Allowed access to reports</br>
         {{else}}
-          <input type = "checkbox" class = "access-checkbox" name = "access-approval-{{user.id}}"> Allowed access to reports</br>
+          <input type = "checkbox" class = "access-checkbox" name = "access-approval-{{id}}"> Allowed access to reports</br>
         {{/if}}
 
-        {{#if users.admin}}
-          <input type = "checkbox" class = "allow-admin" name = "admin-approval-{{user.id}}" checked>Give admin privilages</br>
+        {{#if admin}}
+          <input type = "checkbox" class = "allow-admin" name = "admin-approval-{{id}}" checked> Give admin privilages</br>
         {{else}}
-          <input type = "checkbox" class = "allow-admin" name = "admin-approval-{{user.id}}">Give admin privilages</br>
+          <input type = "checkbox" class = "allow-admin" name = "admin-approval-{{id}}"> Give admin privilages</br>
         {{/if}}
       </div>
   {{/each}}

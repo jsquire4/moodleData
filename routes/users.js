@@ -3,7 +3,6 @@ var router = express.Router();
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var mongoose = require('mongoose');
-var db = mongoose.connection;
 
 var User = require("../models/user")
 
@@ -16,12 +15,10 @@ router.get('/login', function(req, res){
 });
 
 router.get('/verify', function(req, res){
-  var query = {admin: false};
-  var users = db.collection('users').find(query).toArray(function(err, result){
+  User.getUnverified(function(err, pendingUsers){
     if(err) throw err;
-    console.log(result);
+    res.render('verify', {pendingUsers: pendingUsers});
   });
-  res.render('verify');
 });
 
 router.post('/verify', function(req, res){

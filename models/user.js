@@ -31,7 +31,7 @@ var userSchema = new Schema({
   access: {
     type: Boolean,
     default: false
-  }
+  },
 
   admin: {
       type: Boolean,
@@ -68,6 +68,14 @@ module.exports.getUserById = function(id, callback){
   console.log(id);
 }
 
+module.exports.getUnverified = function(callback){
+  
+  User.find({'admin': false}, function(err, docs){
+    if(err) throw err;
+    callback(null, docs);    
+  });
+
+}
 
 
 

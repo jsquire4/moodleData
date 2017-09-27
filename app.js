@@ -35,7 +35,7 @@
 
 
 // DATABASE CONNECTION FOR LOGIN
-  mongoose.connect('mongodb://' + process.env.MLAB_USER + ':' + process.env.MLAB_PASS + '@ds141464.mlab.com:41464/datareaderprofiles');
+  mongoose.connect('mongodb://' + process.env.MLAB_USER + ':' + process.env.MLAB_PASS + process.env.MLAB_HOST);
   var db = mongoose.connection;
 
 // MIDDLEWARE
@@ -49,7 +49,7 @@
     saveUninitialized: false,
     cookie: { secure: false },
     store: new MongoStore({
-    url: 'mongodb://' + process.env.MLAB_USER + ':' + process.env.MLAB_PASS + '@ds141464.mlab.com:41464/datareaderprofiles',
+    url: 'mongodb://' + process.env.MLAB_USER + ':' + process.env.MLAB_PASS + process.env.MLAB_HOST,
     collection: 'sessions'
   })
   }));

@@ -40,6 +40,15 @@ var userSchema = new Schema({
 
 });
 
+function changePermission (id, permission, callback){
+  var query = {_id: id};
+  User.update(query, permission, function(err){
+    if(err) throw err;
+    callback(null);
+  });
+
+}
+
 var User = module.exports = mongoose.model('User', userSchema);
 
 module.exports.createUser = function(newUser, callback) {
@@ -68,14 +77,53 @@ module.exports.getUserById = function(id, callback){
   console.log(id);
 }
 
-module.exports.getUnverified = function(callback){
+module.exports.getUsersList = function(callback){
   
-  User.find({'admin': false}, function(err, docs){
+  User.find({}, function(err, docs){
     if(err) throw err;
     callback(null, docs);    
   });
 
 }
+
+module.exports.updatePermissions = function(changes, callback){
+
+  console.log(changes);
+
+  for (var key in changes) {
+    if(key.includes('admin-')) {
+      
+      var id = key.replace("admin-", "");
+      
+      if(changes[key] == 'on'){
+        var permission = {admin: true};
+      } else {
+        var permission = {admin: false};
+      }
+    
+    } else if (key.includes('access-')) {
+      var id = key.replace("access-", "");
+
+      if(changes[key] == 'on'){
+        var permission = {access: true};
+      } else {
+        var permission = {access: false};
+      }
+
+    }
+
+    changePermission(id, permission, function(err){
+      if(err) throw err;
+      console.log("change of user " + id + " successful");
+    });
+  }
+  callback(null);
+}
+  
+
+
+
+
 
 
 

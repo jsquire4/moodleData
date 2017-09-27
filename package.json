@@ -24,6 +24,8 @@
     "express-validator": "^4.1.1",
     "mongodb": "^2.2.31",
     "mongoose": "^4.11.11",
+    "mysql": "^2.14.1",
+    "nodemon": "^1.12.1",
     "passport": "^0.4.0",
     "passport-http": "^0.3.0",
     "passport-local": "^1.0.0"

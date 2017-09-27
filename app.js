@@ -11,15 +11,17 @@
   var cookieParser = require('cookie-parser');
   var flash = require('connect-flash');
   var mongoose = require('mongoose');
+  var MongoStore = require('connect-mongo')(session);
+  var mysql = require('mysql');
+
+  var fs = require('fs');
+  require('dotenv').config();
+  
+// ROUTES AND REQUIRED FILES
   var routes = require('./routes/index');
   var users = require('./routes/users');
-  var MongoStore = require('connect-mongo')(session);
-  var fs = require('fs');
-
-  require('dotenv').config();
-
-
-
+  var reports = require('./routes/reports');
+  
 // HANDLEBARS ENGINE SETUP
   var handlebars = require('express-handlebars').create({defaultLayout: 'main'});
   app.engine('handlebars', handlebars.engine);
@@ -87,8 +89,12 @@
 // ROUTING
 
   app.use('/', routes);
+
+  app.use('/reports', reports);
   
   app.use('/users', users);
+
+  
   
   // app.use(function(err, req, res, next){
   //   res.status(404);

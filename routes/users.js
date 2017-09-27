@@ -15,14 +15,22 @@ router.get('/login', function(req, res){
 });
 
 router.get('/verify', function(req, res){
-  User.getUnverified(function(err, pendingUsers){
+  User.getUsersList(function(err, users){
     if(err) throw err;
-    res.render('verify', {pendingUsers: pendingUsers});
+    res.render('verify', {users: users});
   });
 });
 
 router.post('/verify', function(req, res){
+   console.log(req.body);
 
+   if(req.body){
+    User.updatePermissions(req.body, function(err){
+      if(err) throw err;
+    });
+   }
+
+   res.redirect('/users/verify');
 });
 
 
@@ -119,14 +127,7 @@ passport.use('login', new LocalStrategy({
     );
 }));
 
-
-
-// router.post('/login', passport.authenticate('local', {failureRedirect: '/users/login', failureFlash: true}), function(req, res) {
-//   res.render('/404', {user: res.user, error: res.error});
-// });
-
-router.post('/login', passport.authenticate('login', { successRedirect: '../loggedin', failureRedirect: '../notloggedin', failureFlash: true }));
-
+router.post('/login', passport.authenticate('login', { successRedirect: '../reports/index', failureRedirect: '/users/login', failureFlash: true }));
 
 router.get('/logout', function(req, res) {
   req.logout();

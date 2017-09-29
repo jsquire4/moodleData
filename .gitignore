@@ -1,4 +1,5 @@
 node_modules
+queries.txt
 *~
 .DS_store
 .env

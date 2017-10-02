@@ -40,6 +40,8 @@ var userSchema = new Schema({
 
 });
 
+var User = module.exports =  mongoose.model('User', userSchema);
+
 function changePermission (id, permission, callback){
   var query = {_id: id};
   User.update(query, permission, function(err){
@@ -48,8 +50,6 @@ function changePermission (id, permission, callback){
   });
 
 }
-
-var User = module.exports = mongoose.model('User', userSchema);
 
 module.exports.createUser = function(newUser, callback) {
   bcrypt.genSalt(10, function(err, salt) {

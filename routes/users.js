@@ -47,7 +47,7 @@ router.post('/register', function(req, res, next){
 
 
   // VALIDATION
-  req.checkBody('first', '* First name is required *').notEmpty();
+   
   req.checkBody('last', '* Last name is required *').notEmpty();
   req.checkBody('email', '* Email is required *').notEmpty();
   req.checkBody('email', '* Email is not valid *').isEmail();
@@ -137,3 +137,14 @@ router.get('/logout', function(req, res) {
 
 
 module.exports = router;
+
+
+
+
+
+
+
+
+
+
+

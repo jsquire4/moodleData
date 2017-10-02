@@ -12,22 +12,51 @@ var connection = mysql.createConnection({
   password: process.env.MYSQL_PASS,
   database: 'moodle'
 });
-
+ 
 var Reporter = module.exports;
 
 
 
 // PRIVATE CLASS METHODS
 
+
+// Define useful analytical tools for arrays and strings
+Array.prototype.sum = function() {
+  return this.reduce(function(a,b){
+    return a+b;
+  });
+};
+
+Array.prototype.min = function() {
+  return this.reduce(function(a,b){
+    return Math.min(a, b);
+  });
+};
+
+Array.prototype.max = function() {
+  return this.reduce(function(a,b){
+    return Math.max(a, b);
+  });
+};
+
+Array.prototype.avg = function() {
+  return (this.sum)/(this.length);
+};
+
+function regexMatch(str, rule) {
+  return new RegExp("^" + rule.split("*").join(".*") + "$").test(str);
+}
+
 function getQuery(reportType){
   if (reportType == "audit") {
-    return "SELECT c.fullname AS 'CourseName', g.name AS 'GroupName', gm.userid AS 'UserID', FROM_UNIXTIME(gm.timeadded, '%c-%d-%Y') AS 'timeAdded' FROM mdl_groups g  JOIN mdl_groups_members AS gm ON g.id = gm.groupid JOIN mdl_course AS c ON g.courseid = c.id WHERE (g.name LIKE '%udit%')";
+    return "SELECT c.fullname AS 'courseName', g.name AS 'groupName', gm.userid AS 'userID', FROM_UNIXTIME(gm.timeadded, '%c-%d-%Y') AS 'timeAdded' FROM mdl_groups g  JOIN mdl_groups_members AS gm ON g.id = gm.groupid JOIN mdl_course AS c ON g.courseid = c.id WHERE (g.name LIKE '%udit%')";
+  
   } else if (reportType == "feedback") {
-    
-    return "SELECT fbc.id AS 'fbSubmissionId', c.id AS 'CourseId', fbc.userid AS 'UserId', FROM_UNIXTIME(fbc.timemodified, '%c-%d-%Y') AS 'Time Submitted', c.fullname AS 'CourseName', fbi.name AS 'Question', REPLACE(REPLACE(fbv.value, '\r', ''), '\n', '<br>') AS 'Answer' FROM mdl_feedback_completed AS fbc JOIN mdl_feedback_value AS fbv ON fbc.id = fbv.completed JOIN mdl_feedback_item AS fbi ON fbv.item = fbi.id JOIN mdl_groups_members AS gm ON fbc.userid = gm.userid JOIN mdl_groups AS g ON gm.groupid = g.id JOIN mdl_course AS c ON g.courseid = c.id WHERE (g.name NOT LIKE '%Audit%' OR '%audit%') && (fbi.name LIKE'%understanding of the subject matter%' OR fbi.name LIKE '%identified actions%' OR fbi.name LIKE '%information was presented%' OR fbi.name LIKE'%I was satisfied with th%') ORDER BY fbSubmissionId, CourseId, userId;";
+    return "SELECT fbc.id AS 'fbSubmissionId', c.id AS 'courseId', fbc.userid AS 'userId', FROM_UNIXTIME(fbc.timemodified, '%c-%d-%Y') AS 'timeSubmitted', c.fullname AS 'courseName', fbi.name AS 'question', REPLACE(REPLACE(fbv.value, '\r', ''), '\n', '<br>') AS 'answer' FROM mdl_feedback_completed AS fbc JOIN mdl_feedback_value AS fbv ON fbc.id = fbv.completed JOIN mdl_feedback_item AS fbi ON fbv.item = fbi.id JOIN mdl_groups_members AS gm ON fbc.userid = gm.userid JOIN mdl_groups AS g ON gm.groupid = g.id JOIN mdl_course AS c ON g.courseid = c.id WHERE (g.name NOT LIKE '%Audit%' OR '%audit%') && (fbi.name LIKE'%understanding of the subject matter%' OR fbi.name LIKE '%identified actions%' OR fbi.name LIKE '%information was presented%' OR fbi.name LIKE'%I was satisfied with th%') ORDER BY fbSubmissionId, courseId, userId;";
+  
   } else if (reportType == "grades") {
-    
-    return "SELECT u.id AS 'UserId', c.id As 'CourseId', u.firstname AS 'First', u.lastname AS 'Last', c.fullname AS 'Course', gi.itemname AS 'ItemName', ROUND (gg.finalgrade, 2) AS 'Grade', DATE_FORMAT(FROM_UNIXTIME(gg.timemodified), '%c-%d-%Y') AS 'Graded' FROM mdl_course AS c JOIN mdl_context AS ctx ON c.id = ctx.instanceid JOIN mdl_role_assignments AS ra ON ra.contextid = ctx.id JOIN mdl_user AS u ON u.id = ra.userid JOIN mdl_grade_grades AS gg ON gg.userid = u.id JOIN mdl_grade_items AS gi ON gi.id = gg.itemid JOIN mdl_course_categories AS cc ON cc.id = c.category WHERE (gi.itemname LIKE '%Pre-Test%' OR gi.itemname LIKE'%Post-Test%') AND (gg.timemodified IS NOT NULL) AND (gi.courseid = c.id) ORDER BY Graded ASC, Last ASC, Course ASC";
+    return "SELECT u.id AS 'userId', c.id As 'courseId', c.fullname AS 'courseName', gi.itemname AS 'itemName', ROUND (gg.finalgrade, 2) AS 'grade', DATE_FORMAT(FROM_UNIXTIME(gg.timemodified), '%c-%d-%Y') AS 'graded' FROM mdl_course AS c JOIN mdl_context AS ctx ON c.id = ctx.instanceid JOIN mdl_role_assignments AS ra ON ra.contextid = ctx.id JOIN mdl_user AS u ON u.id = ra.userid JOIN mdl_grade_grades AS gg ON gg.userid = u.id JOIN mdl_grade_items AS gi ON gi.id = gg.itemid JOIN mdl_course_categories AS cc ON cc.id = c.category WHERE (gi.itemname LIKE '%re%est%' OR gi.itemname LIKE'%ost%est%') AND (gg.timemodified IS NOT NULL) AND (gi.courseid = c.id) ORDER BY graded ASC, userId ASC, courseName ASC";
+  
   } else if (reportType == "fullmetrics") {
     
     // TODO: Create db query that is fit for finding all the needed common metrics
@@ -39,33 +68,30 @@ function getQuery(reportType){
   }
 }
 
-function queryDB(query){
+function queryDB(query, callback){
   var data;
-  
-  onnection.connect(function(err){
+  connection.connect(function(err){
     if (err) throw err;
   });
 
   connection.query(query, function(err, results, feilds){
       if(err) throw err;
-      data = results;
-  });
-
-  connection.end();
-
-  return data;
+      callback(null, results);
+  }); 
 }
 
 function filterResults(fromDate, toDate, results){
   // TODO: Remove any results that reside outside the user's selected date range
   // TODO: Check for errors in the selected date range and output accordingly
+
+  return results;
 }
 
 function runAnalysis(results, reportType){
   if (reportType == "audit") {
     return auditEnrollmentAnalysis(results);
   
-  } else if (reportType == "grade") {
+  } else if (reportType == "grades") {
     return gradeAnalysis(results);
 
   } else if (reportType == "feedback") {
@@ -77,12 +103,100 @@ function runAnalysis(results, reportType){
 }
 
 function auditEnrollmentAnalysis(data) {
-  // TODO: Sum the total number of students auditing each course
-  return data;
+  var coursesList = [];
+  var course;
+  var counter = 0;
+
+  for (var i = 0; i < data.length; i++){
+    var currentCourse = data[i].courseName;
+    
+    if (!course){
+      course = currentCourse;
+      counter += 1;
+    } else if (course == currentCourse) {
+      counter += 1;
+
+    } else {
+      coursesList[course] = counter;
+      course = currentCourse;
+      counter = 1;
+    }
+
+  }
+  
+  // Add Last course not covered by loop
+  counter += 1;
+  coursesList[course] = counter;
+
+  // Return parsed results;
+  return coursesList;
 }
 
 function gradeAnalysis(data) {
-  // TODO: For each class, calculate the aggregate grade of both pre-tests, and post-tests
+  // data is an arrary of objects each of which includes: userId, courseId, courseName, grade, and graded(as a date)
+  var courseList = [];
+  var courseids = [];
+  var course;
+  var preTestScores = [];
+  var postTestScores = [];
+  var undeterminedObjects = [];
+
+  function ACG(name, id) { // Set up object ACG = Aggregate Course Grades object
+    this.name = name,
+    this.id = id, 
+    this.preScores = [];
+    this.postScores = [];
+    this.preTestCount = this.preScores.length;
+    this.postTestCount = this.postScores.length;
+    this.preMax = preScores.max;
+    this.postMax = postScores.max;
+    this.preMin = preScores.min;
+    this.postMin = postScores.max;
+    this.preAverage = preScores.avg;
+    this.postAverage = postScores.avg;
+  };
+  
+  for (var i = 0; i < data.length; i++){
+    var curCourse = data[i]; 
+    
+    if (courseids.indexOf(curCourse.courseId) < 0) { // if the course id is not found in a list of known courses, create new ACG object      
+      var course = new ACG(curCourse.courseName, curCourse.courseId);
+      courseids.push(course.id);
+      courseList.push(course);
+
+    } else if ((course.id != curCourse.courseId) && (courseids.indexOf(curCourse.courseId) > 0)) { // If the aggregate course object already exists but isn't sequencial
+      var id = course.id;
+      var course = courseList.find( c => c.id === id); // Find the already instansiated course object and set that back to course
+
+      if (regexMatch(curCourse.itemName, '*re*est*')){ //Should really have better naming conventions for pre and post tests
+        course.preScores.push(curCourse.grade);
+      
+      } else if (regexMatch(curCourse.itemName, '*ost*est*')){
+        course.postScores.push(curCourse.grade);
+      
+      } else {
+        undeterminedObjects.push(curCourse);
+      }
+
+    } else if (course.id === curCourse.courseId) {
+
+      if (regexMatch(curCourse.itemName, '*re*est*')){ //Should really have better naming conventions for pre and post tests
+        course.preScores.push(curCourse.grade);
+      
+      } else if (regexMatch(curCourse.itemName, '*ost*est*')){
+        course.postScores.push(curCourse.grade);
+      
+      } else {
+        undeterminedObjects.push(curCourse);
+      }
+
+    } else {
+      undeterminedObjects.push(curCourse);
+    }
+
+  }
+  
+  data = {courses: courseList, undetermined: undeterminedObjects}
   return data;
 }
 
@@ -104,12 +218,17 @@ module.exports.getReport = function(fromDate, toDate, reportType, callback){
   var query = getQuery(reportType);
 
   if (query) { 
-    var results = queryDB(query);
-    results = filterResults(fromDate, toDate, results);
+    var results;
+    
+    queryDB(query, function(err, results){
+      if (err) throw err;
+      connection.end();
+    
+      results = filterResults(fromDate, toDate, results);
       
       if (results) {
         var data = runAnalysis(results, reportType);
-        var report = {data: data}
+        var report = {data: data, reportType: reportType};
         callback(null, report);
       
       } else {
@@ -118,6 +237,8 @@ module.exports.getReport = function(fromDate, toDate, reportType, callback){
         callback(err, results);
       }
 
+    });
+    
   } else {
     var err = new Error('Invalid Report Type');
     var results = "There was an error, plase try again";

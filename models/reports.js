@@ -60,12 +60,66 @@ function regexAndScoreProcessing(course, curCourse){
   return course;
 }
 
+function feedbackProcessing(question, curQuestion){
+  question = getFbQType(question, curQuestion.label);
+  question = answerProcessing(question, curQuestion);
+  question.numReponses += 1;
+  return question;
+}
+
+function getFbQType(question, label){
+  if (regexMatch(question.label, '*trongly*issagree*trongly*gree*')){
+    question.qType = "Rank";
+    question.responses = {"Strongly Disagree": 0, "Disasgree": 0, "Neutral": 0, "Agree": 0, "Strongly Agree": 0};
+  
+  } else if (regexMatch(question.label, '*rue*alse*')){
+    question.qType = "TrueFalse";
+    question.responses = {"True": 0, "False": 0};
+  
+  } else {
+    question.qType = "FreeResponse";
+    question.responses = [];
+  }
+
+  return question;
+}
+
+function answerProcessing(question, curQuestion){
+  
+  if (question.qType == "Rank"){
+
+    if (curQuestion.response == '1'){
+      question.responses["Strongly Disagree"] += 1;
+    } else if (curQuestion.response == '2') {
+      question.responses["Disagree"] += 1;
+    } else if (curQuestion.response == '3') {
+      question.responses["Neutral"] += 1;
+    } else if (curQuestion.response == '4') {
+      question.responses["Agree"] += 1;
+    } else if (curQuestion.response == '5') {
+      question.responses["Strongly Agree"] += 1;
+    } 
+
+  } else if (question.qType == "TrueFalse"){
+    
+    if (curQuestion.response == '1') {
+      question.responses["True"] += 1;
+    } else if (curQuestion.response == '2'){
+      question.responses["False"] += 1;
+    }
+
+  } else {
+    question.responses.push({curQuestion.submissionId: curQuesiton.repsonse});
+  }
+
+  return question;
+}
+
 function getQuery(reportType){
   if (reportType == "audit") {
     return "SELECT c.fullname AS 'courseName', g.name AS 'groupName', gm.userid AS 'userID', FROM_UNIXTIME(gm.timeadded, '%c-%d-%Y') AS 'timeAdded' FROM mdl_groups g  JOIN mdl_groups_members AS gm ON g.id = gm.groupid JOIN mdl_course AS c ON g.courseid = c.id WHERE (g.name LIKE '%udit%')";
   
   } else if (reportType == "feedback") {
-    // return "SELECT fbc.id AS 'fbSubmissionId', c.id AS 'courseId', fbc.userid AS 'userId', FROM_UNIXTIME(fbc.timemodified, '%c-%d-%Y') AS 'timeSubmitted', c.fullname AS 'courseName', fbi.id AS 'fbItemId', fbi.name AS 'question', REPLACE(REPLACE(fbv.value, '\r', ''), '\n', '<br>') AS 'answer' FROM mdl_feedback_completed AS fbc JOIN mdl_feedback_value AS fbv ON fbc.id = fbv.completed JOIN mdl_feedback_item AS fbi ON fbv.item = fbi.id JOIN mdl_groups_members AS gm ON fbc.userid = gm.userid JOIN mdl_groups AS g ON gm.groupid = g.id JOIN mdl_course AS c ON g.courseid = c.id WHERE (g.name NOT LIKE '%Audit%' OR '%audit%') && (fbi.name LIKE'%understanding of the subject matter%' OR fbi.name LIKE '%identified actions%' OR fbi.name LIKE '%information was presented%' OR fbi.name LIKE'%I was satisfied with th%') ORDER BY fbSubmissionId, courseId, userId LIMIT 500;";
 
     return "SELECT c.fullname AS 'courseName', fb.course AS 'courseId', fb.id AS 'courseFbSetId', fbc.id AS 'submissionId', FROM_UNIXTIME(fbc.timemodified, '%Y-%m-%d') AS 'subDate', fbc.userid AS 'userId', fbi.id AS 'questionId', fbi.name AS 'question', fbi.presentation AS 'label', fbv.value AS 'response' FROM mdl_feedback as fb JOIN mdl_feedback_item AS fbi ON fb.id = fbi.feedback JOIN mdl_feedback_value AS fbv ON fbi.id = fbv.item JOIN mdl_feedback_completed AS fbc ON fbv.completed = fbc.id JOIN mdl_course AS c ON fb.course = c.id ORDER BY fb.id, CourseId LIMIT 500;";
   
@@ -154,8 +208,8 @@ function gradeAnalysis(data) {
   var undeterminedObjects = [];
 
   function AggregateCourseGrades(name, id) { // Set up object ACG = Aggregate Course Grades object
-    this.name = name,
-    this.id = id, 
+    this.name = name;
+    this.id = id;
     this.preScores = [];
     this.postScores = [];
     this.preTestCount = 0;
@@ -194,43 +248,62 @@ function gradeAnalysis(data) {
 function feedbackAnalysis(data) {
   var coursesList = [];
   var courseids = [];
-  var fbSetSeenIds = [];
+  var questionids = [];
 
-  function aggregateCourseFeedback(name, id) { // For each course compile all question objects
-    this.name = name,
-    this.id = id,
-    this.fbSetIds = [],
-    this.responses = []
-    this.repsonseData = []
+  function AggregateCourseFeedback(name, id) { // For each course compile all question objects
+    this.name = name;
+    this.id = id;
+    this.fbSets = [{"SetId": ["questionObject1", "questionObject2", ...]}];
+    this.fbQIds = [];
+    this.responses = [];
+    this.repsonseData = [];
   }
 
-  function AggregateQuestionRepsonses(fbSetId, questionId, question, label ){ // For each question, record all responses
-    this.questionId = questionId,
-    this.question = question,
-    this.label = label,
-    this.responses = [{submissionId: 0, responseId: 0, response: 0}],  // **** DELETE DUMMY DATA *****
-    this.numResponses = 0,
-    this.avgResponse = 0
+  function AggregateQuestionRepsonses(fbSetId, questionId, question){ // For each question, record all responses
+    this.setId = fbSetId;
+    this.questionId = questionId;
+    this.question = question;
+    this.qType = '';
+    this.responses;
+    this.numResponses = 0;
+    this.avgResponse = 0;
   }
 
 
 
   for (var i = 0; i < data.length; i++){
-    var curCourse = data[i];
+    var curQuestion = data[i];
 
-    if (courseids.indexOf(curCourse.courseId) < 0) {
+    if (courseids.indexOf(curQuestion.courseId) < 0) { // Make sure class does not exist yet
+      var course = new AggregateCourseFeedback(curQuestion.courseName, curQuestion.courseId);
+      var question = new AggregateQuestionResponses(curQuestion.courseFbSetId, curQuestion.questionId, curQuestion.question);
+      courseids.push(course.id);
+      questionids.push(question.id);
 
-
-      var course = new AggregateCourseFeedback(curCourse.courseName, curCourse.courseId);
-      coursesLists.push(course.id);
+    
+      course.fbQIds.push(question.questionId);
+      course.fbSets.push({question.fbSetId: []})
       
-      course.fbSetIds.push(curCourse.courseFbSetId);
-      fbSetSeenIds.push({"courseId": course.id, "fbSetId": curCourse.courseFbSetId});
+      question = feedbackProcessing(question, curQuestion);
+      
 
-
-
+      coursesList.push(course);
+      course.fbSets[question.fbSetId].push({question.questionId: question});
+  
 
     } else if ((course.id != curCourse.courseId) && (courseids.indexOf(curCourse.courseId) > 0)) {
+
+
+      if (fbQsSeenIds.indexOf({"courseId": course.id, "fbSetId": curQuestion.courseFbSetId, "qId": curQuestion.questionId}) < 0) {
+        var question = new AggregateQuestionResponses(curQuestion.courseFbSetId, curQuestion.questionId, curQuestion.question);
+        fbQsSeenIds.push({"courseId": course.id, "fbSetId": question.fbSetId, "qId": question.questionId});
+        course.fbQIds.push(question.questionId);
+        
+        question = feedbackProcessing(question, curQuestion);
+        
+      } else if {
+        
+      }
 
     } else if (course.id === curCourse.courseId) { // If already on the matching course object
       

@@ -10,7 +10,11 @@ var connection = mysql.createConnection({
   password: process.env.MYSQL_PASS,
   database: 'moodle'
 });
- 
+
+connection.connect(function(err){
+  if (err) throw err;
+});
+
 var Reporter = module.exports;
 
 // NEW ARRAY METHODS
@@ -47,14 +51,14 @@ function regexAndScoreProcessing(course, curCourse){
     course.preTestCount = course.preScores.length;
     course.preMax = course.preScores.max();
     course.preMin = course.preScores.min();
-    course.preAverage = getAvg(course.preScores);
+    course.preAverage = getAvg(course.preScores).toFixed(2);
   
   } else if (regexMatch(curCourse.itemName, '*ost*est*')){
     course.postScores.push(curCourse.grade);
     course.postTestCount = course.postScores.length;
     course.postMax = course.postScores.max();
     course.postMin = course.postScores.max();
-    course.postAverage = getAvg(course.postScores);
+    course.postAverage = getAvg(course.postScores).toFixed(2);
   }
 
   return course;
@@ -98,7 +102,7 @@ function answerProcessing(question, curQuestion){
       question.responses["Strongly Agree"] += 1;
     } 
 
-    question.aveResponse = getAverageFbRanked(question); 
+    question.avgResponse = getAverageFbRanked(question); 
 
   } else if (question.qType == "TrueFalse"){
     if (curQuestion.response == '1') {
@@ -107,7 +111,7 @@ function answerProcessing(question, curQuestion){
       question.responses["False"] += 1;
     }
 
-    question.aveResponse = getAverageFbTF(question);
+    question.avgResponse = getAverageFbTF(question);
 
   } else {
       question.responses.push(curQuestion.response);
@@ -170,10 +174,6 @@ function getQuery(reportType){
 
 function queryDB(query, callback){
   var data;
-  connection.connect(function(err){
-    if (err) throw err;
-  });
-
   connection.query(query, function(err, results, feilds){
       if(err) throw err;
       callback(null, results);
@@ -207,26 +207,29 @@ function auditEnrollmentAnalysis(data){
   var course;
   var counter = 0;
 
+  function courseCounter(name){
+    this.name = name;
+    this.count = 0;
+  }
+
   for (var i = 0; i < data.length; i++){
     var currentCourse = data[i].courseName;
-    
+
     if (!course){
-      course = currentCourse;
-      counter += 1;
-    } else if (course == currentCourse) {
-      counter += 1;
-
+      var course = new courseCounter(currentCourse);
+      course.count += 1;
+    } else if (course.name == currentCourse) {
+      course.count += 1;
     } else {
-      coursesList[course] = counter;
-      course = currentCourse;
-      counter = 1;
+      coursesList.push(course);
+      course = new courseCounter(currentCourse);
+      course.count = 1;
     }
-
   }
   
   // Add Last course not covered by loop
-  counter += 1;
-  coursesList[course] = counter;
+  course.count += 1;
+  coursesList.push(course);
 
   // Return parsed results;
   return coursesList;
@@ -374,7 +377,7 @@ module.exports.getReport = function(fromDate, toDate, reportType, callback){
     
     queryDB(query, function(err, results){
       if (err) throw err;
-      connection.end();
+      
     
       results = filterResults(fromDate, toDate, results);
       

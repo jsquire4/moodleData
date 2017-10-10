@@ -34,6 +34,6 @@ function isLoggedIn(req, res, next){
   } else {
     return next(authed);
   }
-}
+} 
 
 module.exports = router; 

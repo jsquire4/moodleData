@@ -1,6 +1,6 @@
 // NODE MODULES
   var express = require('express');
-  var app = express();
+  var app = express(); 
   var path = require('path');
   var bodyParser = require('body-parser');
   var expressValidator = require('express-validator');
@@ -13,6 +13,7 @@
   var mongoose = require('mongoose');
   var MongoStore = require('connect-mongo')(session);
   var mysql = require('mysql');
+  var helpers = require('handlebars-helpers')();
 
   var fs = require('fs');
   require('dotenv').config();

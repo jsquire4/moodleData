@@ -1,5 +1,44 @@
-<h2>This should happen after a successful button post and db call</h2>
+{{#eq report.reportType "audit"}}
+<p>This is a list of all people auditing the classes</p>
+  {{#each report.data}}
+    <div class = "audit-block">
+      <p>{{this.name}}: {{this.count}}</p>
+    </div>
+  {{/each}}
+{{/eq}}
 
-<p>{{results.from}}</p>
-<p>{{results.to}}</p>
-<p>{{results.report}}</p> 
+
+{{#eq report.reportType "grades"}}
+<p>This is an aggregation of all pre and post test scores for all courses</p>
+  {{#each report.data.courses}}
+    <div class = "grade-block">
+      <p>Course Name: {{this.name}} -- Id: {{this.id}}</p>
+      <p>Pre-Test Attempt Count: {{this.preTestCount}}</p>
+      <p>Post-Test Attempt Count: {{this.postTestCount}}</p>
+      <p>Pre-Test Max: {{this.preMax}}</p>
+      <p>Post-Test Max: {{this.postMax}}</p>
+      <p>Pre-Test Min: {{this.preMin}}</p>
+      <p>Post-Test Min: {{this.postMin}}</p>
+      <p>Pre-Test Average: {{this.preAverage}}</p>
+      <p>Post-Test Average: {{this.postAverage}}</p>
+    </div>
+  {{/each}}
+{{/eq}}
+
+
+{{#eq report.reportType "feedback"}}
+<p>This is an aggregation of all the feedback scores for all courses</p>
+{{#each report.data}}
+    <div class = "feeback-block">
+      <p>Course Name: {{this.name}} -- Id: {{this.id}}</p>
+      {{#each this.fbQs}}
+        <p>Set Id: {{setId}} </p>
+        <p>Id: {{id}}</p>
+        <p>Question: {{question}}</p>
+        <p>qType: {{qType}}</p>
+        <p>numResponses: {{numResponses}}</p>
+        <p>avgResponse: {{avgResponse}}</p>
+      {{/each}}
+    </div>
+  {{/each}}
+{{/eq}}

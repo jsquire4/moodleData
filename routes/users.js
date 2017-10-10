@@ -22,14 +22,12 @@ router.get('/verify', function(req, res){
 });
 
 router.post('/verify', function(req, res){
-   console.log(req.body);
-
    if(req.body){
     User.updatePermissions(req.body, function(err){
       if(err) throw err;
     });
    }
-
+   req.flash("success_msg", "User permissions updated");
    res.redirect('/users/verify');
 });
 
@@ -47,7 +45,6 @@ router.post('/register', function(req, res, next){
 
 
   // VALIDATION
-   
   req.checkBody('last', '* Last name is required *').notEmpty();
   req.checkBody('email', '* Email is required *').notEmpty();
   req.checkBody('email', '* Email is not valid *').isEmail();
@@ -90,7 +87,6 @@ router.post('/register', function(req, res, next){
 
 
 // USER LOGIN PROCEDURES
-
 passport.serializeUser(function(user, done) {
   done(null, user._id);
 });
@@ -105,14 +101,14 @@ passport.use('login', new LocalStrategy({
     passReqToCallback : true
   },
   function(req, username, password, done) { 
-    User.findOne({ 'username' :  username }, 
+    User.findOne({'username': username}, 
       function(err, user) {
         if (err)
           return done(err);
         if (!user){
           console.log('User Not Found with username '+ username);
           return done(null, false, 
-                req.flash('message', 'User Not found.'));                 
+                req.flash('error_msg', 'User Not found.'));                 
         }
         
         User.comparePassword(password, user.password, function(err, isMatch){
@@ -136,7 +132,7 @@ router.get('/logout', function(req, res) {
 });
 
 
-module.exports = router;
+module.exports = router; 
 
 
 

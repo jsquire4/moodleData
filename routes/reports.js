@@ -27,6 +27,7 @@ router.post('/report', function(req, res){
 
   Reporter.getReport(fromDate, toDate, reportType, function(err, report){
     if (err) throw err;
+    debugger;
     res.render('report', {report: report});
   });
 });
@@ -42,4 +43,4 @@ router.post('/report/showdata', function(req, res){
   });
 });
 
-module.exports = router; 
+module.exports = router;  

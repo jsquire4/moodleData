@@ -7,12 +7,11 @@
   <div id = "prebuilt-moodle-report-block">
     <form class = "prebuilt-moodle-reports" method = "post" action = "/reports/report">
       <p class = "prebuilt-date-range">Select your report type and date range</p>
-      <input type="radio" name="reporttype" value="audit" checked> Audited Courses Enrollment<br>
-      <input type="radio" name="reporttype" value="feedback">Feedback on Courses<br>
-      <input type="radio" name="reporttype" value="grades">User Test Grades<br>
-      <input type="radio" name="reporttype" value="fullmetrics">Complete Common Metrics Report<br>
-      <input type = "date" name = "fromdate"><br>
-      <input type = "date" name = "todate">
+      <input class = "report-radio" type= "radio" name="reporttype" value="audit" checked> Audited Courses Enrollment<br>
+      <input class = "report-radio" type= "radio" name="reporttype" value="feedback">Feedback on Courses<br>
+      <input class = "report-radio" type= "radio" name="reporttype" value="grades">User Test Grades<br>
+      <input class = "report-date" type = "date" name = "fromdate"><br>
+      <input class = "report-date" type = "date" name = "todate">
       <button type = "submit" class = "btn btn-default">Get Report</button>
     </form>
   </div>

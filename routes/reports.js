@@ -16,7 +16,7 @@ router.post('/report/custom', function(req, res){
 
   Reporter.customReport(fromDate, toDate, tables, function(err, results){
     if (err) throw err;
-    res.render('results', {results: results});
+    res.render('results', {results: results, fromDate: fromDate, toDate: toDate});
   });
 });
 
@@ -27,7 +27,6 @@ router.post('/report', function(req, res){
 
   Reporter.getReport(fromDate, toDate, reportType, function(err, report){
     if (err) throw err;
-    debugger;
     res.render('report', {report: report});
   });
 });

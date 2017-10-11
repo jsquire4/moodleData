@@ -71,7 +71,7 @@ function getFbQType(question, label){
   
   } else if (label.includes('true') || label.includes('false') || label.includes('True') || label.includes('False')){ // for some reason the regex wasn't picking up on this
     question.qType = "TrueFalse";
-    question.responses = {"True": 0, "False": 0};
+    question.responses = {"Positive": 0, "Negative": 0};
   
   } else {
     question.qType = "FreeResponse";
@@ -104,17 +104,17 @@ function answerProcessing(question, curQuestion){
 
     question.avgResponse = getAverageFbRanked(question); 
 
-  } else if (question.qType == "TrueFalse"){
+  } else if (question.qType == "TrueFalse"){ // Changed to positive and negative because of the weak handlebars engine
     if (curQuestion.response == '1') {
-      question.responses["True"] += 1;
+      question.responses["Positive"] += 1;
     } else if (curQuestion.response == '2'){
-      question.responses["False"] += 1;
+      question.responses["Negative"] += 1;
     }
 
     question.avgResponse = getAverageFbTF(question);
 
   } else {
-      question.responses.push(curQuestion.response);
+    question.responses.push(curQuestion.response);
   }
 
   return question;
@@ -124,30 +124,41 @@ function getAverageFbRanked(question){
   // Takes weighted average of each category
   var cat = question.responses;
   var ttlResponses = question.numResponses;
+  
   var strongDisMult = 1;
   var disMult = 2;
   var neuMult = 3;
   var agrMult = 4;
   var strongAgrMult = 5;
+  
   var strongDis = cat["Strongly Disagree"];
   var dis = cat["Disagree"];
   var neu = cat["Neutral"];
   var agr = cat["Agree"];
   var strongAgr = cat["Strongly Agree"];
-  return ( ((strongDisMult) * (strongDis/ttlResponses)) +
+
+  var average = (
+           ((strongDisMult) * (strongDis/ttlResponses)) +
            ((disMult) * (dis/ttlResponses)) +
            ((neuMult) * (neu/ttlResponses)) +
            ((agrMult) * (agr/ttlResponses)) +
-           ((strongAgrMult) * (strongAgr/ttlResponses)) ).toFixed(2);
+           ((strongAgrMult) * (strongAgr/ttlResponses))
+      ).toFixed(2);
+  
+  if (average == NaN || average == null) {
+    return 0;
+  } else {
+    return average;
+  }
 }
 
 function getAverageFbTF(question){
   var ttlResponses = question.numResponses;
-  var numTrue = question.responses["True"];
-  var numFalse = question.responses["False"];
+  var numTrue = question.responses["Positive"];
+  var numFalse = question.responses["Negative"];
   var percentTrue = (((numTrue) /ttlResponses) * 100).toFixed(2);
   var percentFalse = (((numFalse) /ttlResponses) * 100).toFixed(2);
-  return {"True": percentTrue, "False": percentFalse};
+  return {"Positive": percentTrue, "Negative": percentFalse};
 }
 
 function getQuery(reportType){
@@ -156,7 +167,7 @@ function getQuery(reportType){
   
   } else if (reportType == "feedback") {
 
-    return "SELECT c.fullname AS 'courseName', fb.course AS 'courseId', fb.id AS 'courseFbSetId', fbc.id AS 'submissionId', FROM_UNIXTIME(fbc.timemodified, '%Y-%m-%d') AS 'subDate', fbc.userid AS 'userId', fbi.id AS 'questionId', fbi.name AS 'question', fbi.presentation AS 'label', fbv.value AS 'response' FROM mdl_feedback as fb JOIN mdl_feedback_item AS fbi ON fb.id = fbi.feedback JOIN mdl_feedback_value AS fbv ON fbi.id = fbv.item JOIN mdl_feedback_completed AS fbc ON fbv.completed = fbc.id JOIN mdl_course AS c ON fb.course = c.id ORDER BY fb.id, CourseId LIMIT 500;";
+    return "SELECT c.fullname AS 'courseName', fb.course AS 'courseId', fb.id AS 'courseFbSetId', fbc.id AS 'submissionId', FROM_UNIXTIME(fbc.timemodified, '%Y-%m-%d') AS 'subDate', fbc.userid AS 'userId', fbi.id AS 'questionId', fbi.name AS 'question', fbi.presentation AS 'label', fbv.value AS 'response' FROM mdl_feedback as fb JOIN mdl_feedback_item AS fbi ON fb.id = fbi.feedback JOIN mdl_feedback_value AS fbv ON fbi.id = fbv.item JOIN mdl_feedback_completed AS fbc ON fbv.completed = fbc.id JOIN mdl_course AS c ON fb.course = c.id ORDER BY fb.id, CourseId;";
   
   } else if (reportType == "grades") {
     return "SELECT u.id AS 'userId', c.id As 'courseId', c.fullname AS 'courseName', gi.itemname AS 'itemName', ROUND (gg.finalgrade, 2) AS 'grade', DATE_FORMAT(FROM_UNIXTIME(gg.timemodified), '%c-%d-%Y') AS 'graded' FROM mdl_course AS c JOIN mdl_context AS ctx ON c.id = ctx.instanceid JOIN mdl_role_assignments AS ra ON ra.contextid = ctx.id JOIN mdl_user AS u ON u.id = ra.userid JOIN mdl_grade_grades AS gg ON gg.userid = u.id JOIN mdl_grade_items AS gi ON gi.id = gg.itemid JOIN mdl_course_categories AS cc ON cc.id = c.category WHERE (gi.itemname LIKE '%re%est%' OR gi.itemname LIKE'%ost%est%') AND (gg.timemodified IS NOT NULL) AND (gi.courseid = c.id) ORDER BY graded ASC, userId ASC, courseName ASC";

@@ -1,44 +1,101 @@
 {{#eq report.reportType "audit"}}
-<p>This is a list of all people auditing the classes</p>
+<h2>Audit Enrolment Per Course {{date.from}} to {{date.to}}</h2>
+<table class="table table-striped">
+  <thead class="thead-inverse">
+    <tr>
+      <th>Course Name</th>
+      <th>Number of Students Auditing Course </th>
+    </tr>
+  </thead>
+  <tbody>
   {{#each report.data}}
-    <div class = "audit-block">
-      <p>{{this.name}}: {{this.count}}</p>
-    </div>
+    <tr>
+      <td>{{this.name}}</td>
+      <td>{{this.count}}</td>
+    </tr>
   {{/each}}
+  </tbody>
+</table>
 {{/eq}}
 
 
 {{#eq report.reportType "grades"}}
-<p>This is an aggregation of all pre and post test scores for all courses</p>
+<h2>Grade Data Per Course {{date.from}} to {{date.to}}</h2>
+  <table class="table table-striped">
+  <thead class="thead-inverse">
+    <tr>
+      <th>Id</th>
+      <th>Name</th>
+      <th>Pre-Test Attempt Count</th>
+      <th>Post-Test Attempt Count</th>
+      <th>Pre-Test Max Score</th>
+      <th>Post-Test Max Score</th>
+      <th>Pre-Test Min Score</th>
+      <th>Post-Test Min Score</th>
+      <th>Pre-Test Average Score</th>
+      <th>Post-Test Average Score</th>
+    </tr>
+  </thead>
+  <tbody>
   {{#each report.data.courses}}
-    <div class = "grade-block">
-      <p>Course Name: {{this.name}} -- Id: {{this.id}}</p>
-      <p>Pre-Test Attempt Count: {{this.preTestCount}}</p>
-      <p>Post-Test Attempt Count: {{this.postTestCount}}</p>
-      <p>Pre-Test Max: {{this.preMax}}</p>
-      <p>Post-Test Max: {{this.postMax}}</p>
-      <p>Pre-Test Min: {{this.preMin}}</p>
-      <p>Post-Test Min: {{this.postMin}}</p>
-      <p>Pre-Test Average: {{this.preAverage}}</p>
-      <p>Post-Test Average: {{this.postAverage}}</p>
-    </div>
+    <tr>
+      <td>{{this.id}}</td>
+      <td>{{this.name}}</td>
+      <td>{{this.preTestCount}}</td>
+      <td>{{this.postTestCount}}</td>
+      <td>{{this.preMax}}</td>
+      <td>{{this.postMax}}</td>
+      <td>{{this.preMin}}</td>
+      <td>{{this.postMin}}</td>
+      <td>{{this.preAverage}}</td>
+      <td>{{this.postAverage}}</td>
+    </tr>
   {{/each}}
+  </tbody>
+  </table>
 {{/eq}}
-
 
 {{#eq report.reportType "feedback"}}
 <p>This is an aggregation of all the feedback scores for all courses</p>
 {{#each report.data}}
-    <div class = "feeback-block">
-      <p>Course Name: {{this.name}} -- Id: {{this.id}}</p>
-      {{#each this.fbQs}}
-        <p>Set Id: {{setId}} </p>
-        <p>Id: {{id}}</p>
-        <p>Question: {{question}}</p>
-        <p>qType: {{qType}}</p>
-        <p>numResponses: {{numResponses}}</p>
-        <p>avgResponse: {{avgResponse}}</p>
-      {{/each}}
-    </div>
-  {{/each}}
+<div class = "feedback-block">
+  <h5 class = "feedback-course-title">{{this.name}} -- Id: {{this.id}}</h5>
+  <table class = "table table-striped">
+    <thead class = "thead-inverse">
+      <tr>
+        <th>Question</th>
+        {{#each this.fbQs}}
+          {{#eq this.qType "FreeResponse"}}
+          {{else}}
+          <th>{{question}}</th>
+          {{/eq}}
+        {{/each}}
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Average Response</td> 
+        {{#each this.fbQs}}
+          {{#eq qType "Rank"}}
+            <td>{{avgResponse}} / 5</td>
+          {{/eq}}
+          {{#eq qType "TrueFalse"}}
+            <td>True: {{avgResponse.Positive}}%  False: {{avgResponse.Negative}}%</td>
+          {{/eq}}
+        {{/each}}
+      </tr>
+      <tr>
+        <td>Number of Responses</th>
+        {{#each this.fbQs}}
+          {{#eq qType "FreeResponse"}}
+
+          {{else}}
+            <td>{{numResponses}}</td>
+          {{/eq}}
+        {{/each}}
+      </tr>
+    </tbody>
+  <table>
+</div>
+{{/each}}
 {{/eq}}

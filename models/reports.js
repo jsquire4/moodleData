@@ -370,6 +370,7 @@ function feedbackAnalysis(data) {
     }
 
   }
+  debugger;
   return coursesList;
 }
 

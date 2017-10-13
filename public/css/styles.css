@@ -1,3 +1,185 @@
-.page-content {
-  margin-top: 2em;
+button:focus, input[type="button"]:focus {
+    outline: none;
 }
+
+.page-backing {
+  background-color: #F5F5F5;
+}
+
+.container {
+  background-color: white;
+  height: 100%;
+  min-height: 80vh;
+}
+
+.page-content {
+
+}
+
+.navbar-custom {
+  width: 100%;
+  background-color: white;
+  border-bottom: 1px solid #b7b7b7;
+  padding: 0;
+}
+
+.wide-nav-wrapper {
+  max-width: 1400px;
+  width: 95%;
+  display: flex;
+  justify-content: space-between;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.logo-nav {
+  width: 100%;
+  max-width: 250px;
+}
+
+/* TO DO: Write media clauses at smaller screen sizes so that the menu icon doesn't colide with the logo */
+
+
+.custom-nav-button {
+  top: 2rem;
+}
+
+.nav-collapse-custom {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.custom-nav-button:active {
+  background-color: grey;
+}
+.nav-spacer-large {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  flex-basis: 100%;
+}
+
+.custom-nav-font {
+  font-size: 20px;
+  font-family: Montserrat, sans-serif;
+  color: #194179;
+  padding: 0 !important;
+  margin-left: 10px;
+}
+
+.custom-nav-font:hover {
+  color: #8e9db3 !important;
+}
+
+.color-custom {
+  color: #194179;
+}
+
+.nav-flex-container {
+  width: 75%;
+  display: flex;
+  justify-content: space-around;
+}
+
+.footer-custom {
+  width: 100%;
+  background-color: #194179;
+}
+
+.footer-wrapper {
+  width: 95%;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+
+.footer-link-block {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  padding-top: 15px;
+
+}
+
+.footer-link {
+  color: white;
+  font-size: 20px;
+  font-family: Montserrat, sans-serif;
+  padding: 0 !important;
+  text-decoration: none;
+  flex-basis: 100%;
+  text-align: center;
+}
+
+.footer-link:hover {
+  color: white;
+  text-decoration: underline;
+}
+
+.footer-link:active {
+  outline: none;
+}
+
+.footer-copyright {
+  display: flex;
+  flex-direction: column;
+  margin-top: 25px;
+  padding-bottom: 20px;
+}
+
+.copyright-info, .support-info {
+  color: white;
+  font-size: 14px;
+  font-family: Montserrat, sans-serif;
+  text-align: center;
+  margin-bottom: 0;
+}
+
+.business-header {
+  height: 50vh;
+  min-height: 300px;
+  background: url('http://placehold.it/1920x400') center center no-repeat scroll;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  background-size: cover;
+  -o-background-size: cover;
+}
+
+.card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-text, .card-title {
+  width: 95%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.card-text {
+  margin-bottom: 10px !important;
+}
+
+.card-title {
+  margin-top: 10px !important;
+}
+
+.user-login-home {
+  margin-top: 1.5em;
+}
+
+.card-img-top-custom {
+  width: 100%;
+  height: auto;
+}
+
+
+
+
+
+
+

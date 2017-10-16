@@ -1,28 +1,43 @@
-<h2>Verify Users and Permissions</h2>
-
-{{#if users}}
+<div class = "verification-page-block">
+  <h2 class = "verification-header">User Verification and Permissions</h2>
+  {{#if users}}
   <form id = "user-permissions-approval" method = "post" action = "/users/verify">
-  {{#each users}}
-      <div class = "user-permissions">
-        <p class = "user-verification-name">{{first}} {{last}}</p>
-        {{#if access}}
-          <input type = "checkbox" class = "access permissions-checkbox checked" name = "access-{{id}}" checked> Allowed access to reports</br>
-        {{else}}
-          <input type = "checkbox" class = "access permissions-checkbox" name = "access-{{id}}"> Allowed access to reports</br>
-        {{/if}}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Has Report Access</th>
+          <th>Has Admin Privilages</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each users}}
+          <tr class = "user-permissions">
+            <td>{{firstname}} {{lastname}}</td>
+            <td>{{email}}</td>
+            {{#if access}}
+              <td><input type = "checkbox" class = "access permissions-checkbox checked" name = "access-{{id}}" checked></td>
+            {{else}}
+              <td><input type = "checkbox" class = "access permissions-checkbox" name = "access-{{id}}"></td>
+            {{/if}}
 
-        {{#if admin}}
-          <input type = "checkbox" class = "admin permissions-checkbox checked" name = "admin-{{id}}" checked> Give admin privilages</br>
-        {{else}}
-          <input type = "checkbox" class = "admin permissions-checkbox" name = "admin-{{id}}"> Give admin privilages</br>
-        {{/if}}
-      </div>
-  {{/each}}
-    <button id = "permissions-submit" type = "submit" class = "btn btn-default">Save Permissions</button>
+            {{#if admin}}
+              <td><input type = "checkbox" class = "admin permissions-checkbox checked" name = "admin-{{id}}" checked></td>
+            {{else}}
+              <td><input type = "checkbox" class = "admin permissions-checkbox" name = "admin-{{id}}"></td>
+            {{/if}}
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+    <button id = "permissions-submit" type = "submit" class = "btn btn-success ">Save Permissions</button>
   </form>
-{{else}}
-  <h2>Nothing to see here!</h2>
-{{/if}}
+  {{else}}
+    <h2>Nothing to see here!</h2>
+  {{/if}}
+</div>
+
 
 <script type ="text/javascript">
   var form = $("#user-permissions-approval");
@@ -30,6 +45,7 @@
     e.preventDefault();
     var data = {};
     var usersList = form.find('.user-permissions');
+
     for (var i = 0; i < usersList.length; i ++){
       var curUser = $(usersList[i])
       var access = curUser.find('.access');
@@ -45,12 +61,20 @@
         data[admin.attr('name')] = 'on';
       }
     }
+
     $.ajax({
         url : "/users/verify",
         type: "POST",
         data: data,
-        dataType: "json"
+        error: function(){
+          
+        },
+        success: function(data){
+          console.log(data);
+        }
     });
 
   });
+
+
 </script>

@@ -7,11 +7,11 @@ var Schema = mongoose.Schema;
 
 var userSchema = new Schema({
 
-  first: {
+  firstname: {
     type: String
   },
 
-  last: {
+  lastname: {
     type: String
   },
 
@@ -114,7 +114,6 @@ module.exports.updatePermissions = function(changes, callback){
 
     changePermission(id, permission, function(err){
       if(err) throw err;
-      console.log("change of user " + id + " successful");
     });
   }
   callback(null);

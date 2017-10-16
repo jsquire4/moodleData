@@ -1,7 +1,7 @@
 {{#eq report.reportType "audit"}}
-<h2>Audit Enrolment Per Course {{date.from}} to {{date.to}}</h2>
-<table class="table table-striped">
-  <thead class="thead-inverse">
+<h2>Audit Enrolment Per Course from {{date.from}} to {{date.to}}</h2>
+<table id = "audit-table" class="table table-striped">
+  <thead class="thead">
     <tr>
       <th>Course Name</th>
       <th>Number of Students Auditing Course </th>
@@ -20,9 +20,9 @@
 
 
 {{#eq report.reportType "grades"}}
-<h2>Grade Data Per Course {{date.from}} to {{date.to}}</h2>
-  <table class="table table-striped">
-  <thead class="thead-inverse">
+<h2>Grade Data Per Course from {{date.from}} to {{date.to}}</h2>
+  <table id = "grade-table" class="table table-striped">
+  <thead class="thead">
     <tr>
       <th>Id</th>
       <th>Name</th>
@@ -56,12 +56,12 @@
 {{/eq}}
 
 {{#eq report.reportType "feedback"}}
-<p>This is an aggregation of all the feedback scores for all courses</p>
+<h2>Aggregate Feedback Per Course from {{date.from}} to {{date.to}}</h2>
 {{#each report.data}}
+<h5 class = "feedback-course-title">{{this.name}} -- Id: {{this.id}}</h5>
 <div class = "feedback-block">
-  <h5 class = "feedback-course-title">{{this.name}} -- Id: {{this.id}}</h5>
-  <table class = "table table-striped">
-    <thead class = "thead-inverse">
+  <table class = "feedback-table table table-striped">
+    <thead class = "thead">
       <tr>
         <th>Question</th>
         {{#each this.fbQs}}
@@ -77,7 +77,7 @@
         <td>Average Response</td> 
         {{#each this.fbQs}}
           {{#eq qType "Rank"}}
-            <td>{{avgResponse}} / 5</td>
+            <td>{{avgResponse}} /5</td>
           {{/eq}}
           {{#eq qType "TrueFalse"}}
             <td>True: {{avgResponse.Positive}}%  False: {{avgResponse.Negative}}%</td>
@@ -95,7 +95,7 @@
         {{/each}}
       </tr>
     </tbody>
-  <table>
+  </table>
 </div>
 {{/each}}
 {{/eq}}

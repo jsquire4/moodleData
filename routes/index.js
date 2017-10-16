@@ -22,7 +22,7 @@ function ensureAuthentication(req, res, next){
     next();
   } else {
     req.flash('error_msg', 'You are not logged in.  Log in or register to continue.');
-    res.redirect('/notloggedin');
+    res.redirect('/users/login');
   }
 }
 

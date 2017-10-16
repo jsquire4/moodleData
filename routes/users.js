@@ -14,21 +14,19 @@ router.get('/login', function(req, res){
   res.render('login', {user: req.user});
 });
 
-router.get('/verify', function(req, res){
+router.get('/verify', ensureAdmin, function(req, res){
   User.getUsersList(function(err, users){
     if(err) throw err;
     res.render('verify', {users: users});
   });
 });
 
-router.post('/verify', function(req, res){
-   if(req.body){
+router.post('/verify', ensureAdmin, function(req, res){
     User.updatePermissions(req.body, function(err){
       if(err) throw err;
+      res.redirect('/users/verify');
+      req.flash("success_msg", "User permissions updated");
     });
-   }
-   req.flash("success_msg", "User permissions updated");
-   res.redirect('/users/verify');
 });
 
 
@@ -36,8 +34,8 @@ router.post('/verify', function(req, res){
 // USER REGISTRATION
 
 router.post('/register', function(req, res, next){
-  var first = req.body.first;
-  var last = req.body.last;
+  var firstname = req.body.firstname;
+  var lastname = req.body.lastname;
   var email = req.body.email;
   var username = req.body.username;
   var password = req.body.userPass;
@@ -45,8 +43,8 @@ router.post('/register', function(req, res, next){
 
 
   // VALIDATION
-  req.checkBody('last', '* Last name is required *').notEmpty();
-  req.checkBody('email', '* Email is required *').notEmpty();
+  req.checkBody('lastname', '* Last name is required *').notEmpty();
+  req.checkBody('firstname', '* First name is required *').notEmpty();
   req.checkBody('email', '* Email is not valid *').isEmail();
   req.checkBody('username', '* User name is required *').notEmpty();
   req.checkBody('userPass', '* Password is required *').notEmpty();
@@ -64,8 +62,8 @@ router.post('/register', function(req, res, next){
   } else {
     
     var newUser = new User ({
-      first: first,
-      last: last,
+      firstname: firstname,
+      lastname: lastname,
       username: username,
       email: email,
       password: password,
@@ -83,7 +81,6 @@ router.post('/register', function(req, res, next){
   }
 
 });
-
 
 
 // USER LOGIN PROCEDURES
@@ -130,6 +127,20 @@ router.get('/logout', function(req, res) {
   req.flash('success_msg', 'You have logged out successfully');
   res.redirect('/users/login');
 });
+
+function ensureAdmin(req, res, next){
+  if(req.isAuthenticated()){
+    if (req.user.admin){
+      next();
+    } else {
+      req.flash('error_msg', "You are not permitted to see that page, talk to an administrator for access");
+      res.redirect('/');
+    }
+  } else {
+    req.flash('error_msg', 'You are not logged in.  Log in or register to continue.');
+    res.redirect('/users/login');
+  }
+}
 
 
 module.exports = router; 

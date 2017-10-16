@@ -1,24 +1,48 @@
 <div class = "reports-splash">
-  <div id = "moodle-analyitics-block">
-
-  </div>
-
-
-  <div id = "prebuilt-moodle-report-block">
+  <div class = "report-selection-block">
+    
     <form class = "prebuilt-moodle-reports" method = "post" action = "/reports/report">
-      <p class = "prebuilt-date-range">Select your report type and date range</p>
-      <input class = "report-radio" type= "radio" name="reporttype" value="audit" checked> Audited Courses Enrollment<br>
-      <input class = "report-radio" type= "radio" name="reporttype" value="feedback">Feedback on Courses<br>
-      <input class = "report-radio" type= "radio" name="reporttype" value="grades">User Test Grades<br>
-      <input class = "report-date" type = "date" name = "fromdate"><br>
-      <input class = "report-date" type = "date" name = "todate">
-      <button type = "submit" class = "btn btn-default">Get Report</button>
+      <h5 class = "prebuilt-report-select">Step 1: Select a report type</h5>
+     
+      <div class="btn-group" data-toggle="buttons">
+
+        <label class="btn btn-primary">
+          <input type="radio" class = "report-selection" name="reporttype" id="audit" autocomplete="off" value="audit">Course Audit Enrollment
+        </label>
+
+        <label class="btn btn-primary">
+          <input type="radio" class = "report-selection" name="reporttype" id="feedback" autocomplete="off" value="feedback">Course Feedback
+        </label>
+
+        <label class="btn btn-primary">
+          <input type="radio" class = "report-selection" name="reporttype" id="grades" autocomplete="off" value="grades">Course Pre and Post-Test Grades
+        </label>
+
+      </div>
+
+      <div class = "date-fields">
+        <h5 class = "prebuilt-date-range">Step 2: Select the desired date range</h5>
+        <div class = "date-field-single-block">
+          <p class = "date-field-single-label">From</p>
+          <input class = "form-control report-dates" type = "date" name = "fromdate">
+        </div>
+
+        <div class = "date-field-single-block">
+          <p class = "date-field-single-label">To</p>
+          <input class = "form-control report-dates" type = "date" name = "todate">
+        </div>
+      </div>
+      
+      <button type = "submit" class = "btn btn-success">Get Report</button>
     </form>
+
   </div>
 
-
-  <div id = "custom-sql-input">
+  <div class = "saved-reports-block">
+    <h4 class = "announcement-reports">Coming soon!  Save data and compile reports together!</h4>
   </div>
+</div>
 
-
-</div> 
+<script type = "text/javascript">
+$().button('toggle');
+</script>

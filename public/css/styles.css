@@ -168,9 +168,23 @@ button:focus, input[type="button"]:focus {
   margin-top: 10px !important;
 }
 
-.user-login-home {
-  margin-top: 1.5em;
+.top-frontpage-block {
+
 }
+
+.home-hero-left {
+  border-right: 1px solid #b7b7b7;
+}
+
+.user-login-home, .user-logged-in {
+}
+
+.user-logged-in {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
 
 .card-img-top-custom {
   width: 100%;
@@ -301,7 +315,19 @@ button:focus, input[type="button"]:focus {
 }
 
 
+/* 404 AND 500 PAGE */
 
+.center {
+  text-align: center; 
+  margin-left: auto; 
+  margin-right: auto; 
+  margin-bottom: auto; 
+  margin-top: auto;
+}
 
+.hero-unit {
+  width: 100%;
+  max-width: 750px;
+}
 
 

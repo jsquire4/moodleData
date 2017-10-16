@@ -2,7 +2,7 @@
 <div class="container">
 
 <div class="row top-frontpage-block">
-  <div class="col-sm-8">
+  <div class="col-sm-8 home-hero-left">
     <h2 class="mt-4">Welcome!</h2>
     <p>Login or register to view reports.  If you are new to the site, click the button below to read through the documentation for this site. <br>
     <br>
@@ -13,9 +13,17 @@
   </div>
 
   {{#if user}}
-    
+    <div class = "col-sm-4 user-logged-in">
+      <div class = "info-home-bloc">
+        <h2 class = "greeting-banner mt-4">Hello {{user.firstname}}!</h2>
+        <p class = "other-info-home">This might be another place to store some information that you need to know.  There might even be a button to take you there.</p>
+        <p class = "other-info-home">Of course this is all theoretical and doesn't do anything</p>
+      </div>
+      <a href="#" class="btn btn-danger btn-lg">Red Pill Me Morpheus</a>
+    </div>
   {{else}}
     <div class="col-sm-4 user-login-home">
+      <h2 class = "greeting-banner mt-4">Login</h2>
       <form class = "user-login-form" method = "post" action = "/users/login">
         <div class="form-group">
           <label for="username">User Name</label>
@@ -66,12 +74,12 @@
       <div class = "card-flex-protector">
         <img class="card-img-top-custom" src="/img/support.jpg" alt="">
         <div class="card-body">
-          <h4 class="card-title">Questions? Comments? Bugs?</h4>
-          <p class="card-text">If you have any questions, comments, or find a bug please fill out the form and the web admin will try to help you as soon as possible.</p>
+          <h4 class="card-title">Questions? Comments? Liabilities?</h4>
+          <p class="card-text">If you have any questions, comments, or find a bug please fill out the form and the support team will try to help you as soon as possible.</p>
         </div>
       </div>
       <div class="card-footer">
-        <a href="#" class="btn btn-primary">Continue to support</a>
+        <a href="/support" class="btn btn-primary">Continue to support</a>
       </div>
     </div>
   </div>

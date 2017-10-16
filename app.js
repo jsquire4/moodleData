@@ -14,6 +14,7 @@
   var MongoStore = require('connect-mongo')(session);
   var mysql = require('mysql');
   var helpers = require('handlebars-helpers')();
+  
 
   var fs = require('fs');
   require('dotenv').config();
@@ -95,19 +96,15 @@
   
   app.use('/users', users);
 
-  
-  
-  // app.use(function(err, req, res, next){
-  //   res.status(404);
-  //   res.render('404');
-  // });
-
   app.use(function(err, req, res, next){
     console.error(err.stack);
     res.status(500);
     res.render('500');
   });
 
+  app.get('*', function(req, res){
+    res.render('404');
+  });
 
 // PORT LISTENING 
   app.listen(app.get('port'), function(){

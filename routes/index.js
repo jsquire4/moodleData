@@ -13,8 +13,12 @@ router.get('/about', function(req, res){
   res.render('about');
 });
 
-router.get('/404',  function(req, res){
-  res.render('404');
+router.get('/support', function(req, res){
+  res.render('support');
+});
+
+router.get('/500', function(req, res){
+  res.render('500');
 });
 
 function ensureAuthentication(req, res, next){
@@ -25,15 +29,5 @@ function ensureAuthentication(req, res, next){
     res.redirect('/users/login');
   }
 }
-
-function isLoggedIn(req, res, next){
-  var authed = false;
-  if(req.isAuthenticated()){
-    authed = true;
-    return next(authed);
-  } else {
-    return next(authed);
-  }
-} 
 
 module.exports = router; 

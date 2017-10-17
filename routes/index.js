@@ -1,27 +1,18 @@
 var express = require('express');
 var router = express.Router();
+var Ticket = require("../models/support");
+var User = require('../models/user');
 
 router.get('/', function(req, res){
   res.render('home', {user: req.user});
-});
-
-router.get('/loggedin', ensureAuthentication, function(req, res){
-  res.render('loggedin');
 });
 
 router.get('/about', function(req, res){
   res.render('about');
 });
 
-router.get('/support', function(req, res){
-  res.render('support');
-});
 
-router.get('/500', function(req, res){
-  res.render('500');
-});
-
-function ensureAuthentication(req, res, next){
+function loggedIn(req, res, next){
   if(req.isAuthenticated()){
     next();
   } else {

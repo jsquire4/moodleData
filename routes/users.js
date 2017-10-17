@@ -7,11 +7,11 @@ var mongoose = require('mongoose');
 var User = require("../models/user")
 
 router.get('/register', function(req, res){
-  res.render('register', {user: req.user});
+  res.render('register');
 });
 
 router.get('/login', function(req, res){
-  res.render('login', {user: req.user});
+  res.render('login');
 });
 
 router.get('/verify', ensureAdmin, function(req, res){
@@ -43,12 +43,12 @@ router.post('/register', function(req, res, next){
 
 
   // VALIDATION
-  req.checkBody('lastname', '* Last name is required *').notEmpty();
-  req.checkBody('firstname', '* First name is required *').notEmpty();
-  req.checkBody('email', '* Email is not valid *').isEmail();
-  req.checkBody('username', '* User name is required *').notEmpty();
-  req.checkBody('userPass', '* Password is required *').notEmpty();
-  req.checkBody('confirmUserPass', '* Password does not match *').equals(req.body.userPass);
+  req.checkBody('lastname', 'Last name is required').notEmpty();
+  req.checkBody('firstname', 'First name is required').notEmpty();
+  req.checkBody('email', 'Email is not valid').isEmail();
+  req.checkBody('username', 'User name is required').notEmpty();
+  req.checkBody('userPass', 'Password is required').notEmpty();
+  req.checkBody('confirmUserPass', 'Password does not match').equals(req.body.userPass);
 
   var errors = req.validationErrors();
   

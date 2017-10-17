@@ -23,6 +23,7 @@
   var routes = require('./routes/index');
   var users = require('./routes/users');
   var reports = require('./routes/reports');
+  var support = require('./routes/support');
   
 // HANDLEBARS ENGINE SETUP
   var handlebars = require('express-handlebars').create({defaultLayout: 'main'});
@@ -91,10 +92,9 @@
 // ROUTING
 
   app.use('/', routes);
-
   app.use('/reports', reports);
-  
   app.use('/users', users);
+  app.use('/support', support);
 
   app.use(function(err, req, res, next){
     console.error(err.stack);

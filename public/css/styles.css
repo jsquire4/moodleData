@@ -315,6 +315,63 @@ button:focus, input[type="button"]:focus {
 }
 
 
+/* SUPPORT SUMBIT, TICKETS, VIEW, AND UPDATE */
+
+.support-header {
+
+}
+
+.support-subheading {
+  width: 75%;
+  font-size: 14px;
+  border-top: 1px solid #b7b7b7;
+  padding-top: 25px;
+}
+
+.support-form-block {
+  margin-bottom: 35px;
+}
+
+.support-input-block {
+  width: 100%;
+  max-width: 751px;
+  margin-bottom: 35px;
+}
+
+.support-label, .support-subject, .support-body {
+  display: inline-block;
+}
+
+.support-label {
+  width: 75px;
+  margin-right: 25px;
+  text-align: right;
+  font-weight: 700;
+  vertical-align: top;
+}
+
+.support-subject, .support-body {
+  max-width: 645px;
+  width: 100%;
+}
+
+.support-body {
+  height: 300px;
+}
+
+.support-submit {
+  display: block;
+  margin-left: auto;
+  width: 150px;
+  margin-top: 25px;
+}
+
+.support-button {
+  margin-top: 30px;
+  margin-right: 25px;
+}
+
+
 /* 404 AND 500 PAGE */
 
 .center {
@@ -329,5 +386,6 @@ button:focus, input[type="button"]:focus {
   width: 100%;
   max-width: 750px;
 }
+
 
 

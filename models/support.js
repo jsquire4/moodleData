@@ -62,18 +62,41 @@ module.exports.getTicketById = function(ticketId, callback){
   Ticket.findbyId(ticketId, callback);
 }
 
-module.exports.getAllPending = function(userType, callback){
-  // TO DO: Create query that finds all pending support tickets based on the user's admin/not admin status
-  // and returns the proper tickets
+module.exports.getTickets = function(user, callback){
+ var pending;
+ var completed;
+
+  if (user.admin) {
+    
+
+    pending = Ticket.find({resolved: false}, 'subject body', function(err, data){
+      if (err) throw err;
+      return data;
+    });
+
+    completed = Ticket.find({resolved: true}, 'subject body', function(err, data){
+      if (err) throw err;
+      return data;
+    });
+
+
+
+
+  } else {
+    pending = Ticket.find({resolved: false, userid: user.id}, 'subject body', function(err, data){
+      if (err) throw err;
+      return data;
+    });
+
+    completed = Ticket.find({resolved: true, userid: user.id}, 'subject body', function(err, data){
+      if (err) throw err;
+      return data;
+    });
+  }
+
+  var data = {pending: pending, completed: completed, user: user};
+  callback(null, data);
 }
-
-module.exports.getAllCompleted = function(userType, callback){
-  // TO DO: Create query that finds all completed support tickets based on the user's admin/not admin status
-  // and returns the proper tickets
-}
-
-
-
 
 
 

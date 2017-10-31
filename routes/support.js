@@ -15,19 +15,12 @@ router.get('/submitted', function(req, res){
 router.get('/tickets', isLoggedIn, function(req, res){
 
   // Just allow users to pass through to the support area for now
-  
-  // var user = {userid: req.user.id, admin: req.user.admin};
-  // var pending = Ticket.getAllPending(user, function(err, tickets){
-  //   if(err) throw err;
-  //   return tickets;
-  // });
-  // var completed = Ticket.getAllCompleted(user, function(err, tickets){
-  //   if(err) throw err;
-  //   return tickets;
-  // });
-  // res.render('tickets', {user: user, pending: pendingTickets, completed: completedTickets});
+  var user = req.user;
 
-  res.render('ticketview');
+  Ticket.getTickets(user, function(err, data){
+    if (err) throw err;
+    res.render('tickets', {data: data});
+  });
 });
 
 router.get('/view/:id', isLoggedIn, function(req, res){
@@ -95,14 +88,7 @@ router.post('/', isLoggedIn, function(req, res){
   }
 });
 
-function isLoggedIn(req, res, next){
-  if(req.isAuthenticated()){
-    next();
-  } else {
-    req.flash('error_msg', 'You are not logged in.  Log in or register to continue.');
-    res.redirect('/users/login');
-  }
-}
+i
 
 function ensureAdmin(req, res, next){
   if(req.isAuthenticated()){

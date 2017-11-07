@@ -67,11 +67,11 @@ function regexAndScoreProcessing(course, curCourse){
 function getFbQType(question, label){
   if (regexMatch(label, '*agree*')){
     question.qType = "Rank";
-    question.responses = {"Strongly Disagree": 0, "Disagree": 0, "Neutral": 0, "Agree": 0, "Strongly Agree": 0};
+    question.responses = {stronglyDisagree: 0, disagree: 0, neutral: 0, agree: 0, stronglyAgree: 0};
   
   } else if (label.includes('true') || label.includes('false') || label.includes('True') || label.includes('False')){ // for some reason the regex wasn't picking up on this
     question.qType = "TrueFalse";
-    question.responses = {"Positive": 0, "Negative": 0};
+    question.responses = {positive: 0, negative: 0};
   
   } else {
     question.qType = "FreeResponse";
@@ -80,6 +80,26 @@ function getFbQType(question, label){
 
   return question;
 }
+
+function relevantQuestion(question){
+
+  var comMetQs = {
+    q1: "*ubject*atter*",
+    q2: "*dentified*ctions*",
+    q3: "*nformation*resented*learly*",
+    q4: "*atisfied*verall*", 
+    q5: "*earning*bjectives*",
+  };
+
+
+  if (regexMatch(question, comMetQs.q1) || regexMatch(question, comMetQs.q2) || regexMatch(question, comMetQs.q3) || regexMatch(question, comMetQs.q4) || regexMatch(question, comMetQs.q5)){
+    return true
+  } else {
+    return false
+  }
+
+}
+
 
 function feedbackProcessing(question, curQuestion){
   question = answerProcessing(question, curQuestion);
@@ -91,24 +111,24 @@ function answerProcessing(question, curQuestion){
   
   if (question.qType == "Rank"){
     if (curQuestion.response == '1'){
-      question.responses["Strongly Disagree"] += 1;
+      question.responses.stronglyAgree += 1;
     } else if (curQuestion.response == '2') {
-      question.responses["Disagree"] += 1;
+      question.responses.disagree += 1;
     } else if (curQuestion.response == '3') {
-      question.responses["Neutral"] += 1;
+      question.responses.neutral += 1;
     } else if (curQuestion.response == '4') {
-      question.responses["Agree"] += 1;
+      question.responses.agree+= 1;
     } else if (curQuestion.response == '5') {
-      question.responses["Strongly Agree"] += 1;
+      question.responses.stronglyAgree += 1;
     } 
 
     question.avgResponse = getAverageFbRanked(question); 
 
   } else if (question.qType == "TrueFalse"){ // Changed to positive and negative because of the weak handlebars engine
     if (curQuestion.response == '1') {
-      question.responses["Positive"] += 1;
+      question.responses.positive += 1;
     } else if (curQuestion.response == '2'){
-      question.responses["Negative"] += 1;
+      question.responses.negative += 1;
     }
 
     question.avgResponse = getAverageFbTF(question);
@@ -131,11 +151,11 @@ function getAverageFbRanked(question){
   var agrMult = 4;
   var strongAgrMult = 5;
   
-  var strongDis = cat["Strongly Disagree"];
-  var dis = cat["Disagree"];
-  var neu = cat["Neutral"];
-  var agr = cat["Agree"];
-  var strongAgr = cat["Strongly Agree"];
+  var strongDis = cat.stronglyDisagree;
+  var dis = cat.disagree;
+  var neu = cat.neutral;
+  var agr = cat.agree;
+  var strongAgr = cat.stronglyAgree;
 
   var average = (
            ((strongDisMult) * (strongDis/ttlResponses)) +
@@ -154,11 +174,11 @@ function getAverageFbRanked(question){
 
 function getAverageFbTF(question){
   var ttlResponses = question.numResponses;
-  var numTrue = question.responses["Positive"];
-  var numFalse = question.responses["Negative"];
+  var numTrue = question.responses.positive;
+  var numFalse = question.responses.negative;
   var percentTrue = (((numTrue) /ttlResponses) * 100).toFixed(2);
   var percentFalse = (((numFalse) /ttlResponses) * 100).toFixed(2);
-  return {"Positive": percentTrue, "Negative": percentFalse};
+  return {positive: percentTrue, negative: percentFalse};
 }
 
 function getQuery(reportType){
@@ -301,6 +321,91 @@ function gradeAnalysis(data) {
   return data;
 }
 
+// function feedbackAnalysis(data) {
+//   var coursesList = [];
+//   var courseids = [];
+//   var questionids = [];
+
+//   function ACF(name, id) { //ACF = Aggregate Course Feedback; For each course compile all question objects
+//     this.name = name;
+//     this.id = id;
+//     this.fbQs =[];
+//     this.fbQIds = [];
+//   }
+
+//   function AQR(fbSetId, questionId, question){ // AQR = Aggregate Question Responses; For each question, record all responses
+//     this.setId = fbSetId;
+//     this.id = questionId;
+//     this.question = question;
+//     this.qType = '';
+//     this.responses;
+//     this.numResponses = 0;
+//     this.avgResponse = 0;
+//   }
+
+//   for (var i = 0; i < data.length; i++){
+//     var curQuestion = data[i];
+
+//     if (courseids.indexOf(curQuestion.courseId) < 0) { // If the course does not yet exist, create a new course
+//       var course = new ACF(curQuestion.courseName, curQuestion.courseId); // Make course and question objects
+//       var question = new AQR(curQuestion.courseFbSetId, curQuestion.questionId, curQuestion.question);
+      
+//       courseids.push(course.id); // Add course and question ids to global list of known ids
+//       questionids.push(question.id);
+//       course.fbQIds.push(question.id); // Add question ids to list of known ids related to the course
+//       question = getFbQType(question, curQuestion.label); // Create the proper response collection points
+//       question = feedbackProcessing(question, curQuestion); // Process the question data
+//       course.fbQs.push(question);
+//       coursesList.push(course); // Push the course object to list of courses
+
+//     } else if ((course.id != curQuestion.courseId) && (courseids.indexOf(curQuestion.courseId) > 0)) { // If the course does exist, but isn't sequencial
+//       var id = curQuestion.courseId;
+//       var course = coursesList.find(c => c.id === id); // Set course object to the current question's course
+
+//       if (course.fbQIds.indexOf(curQuestion.questionId) < 0){ // if the question is new to the course
+//         var question = new AQR(curQuestion.courseFbSetId, curQuestion.questionId, curQuestion.question);
+//         questionids.push(question.id);
+//         course.fbQIds.push(question.id);
+//         question = getFbQType(question, curQuestion.label); // create the proper response collection points
+//         question = feedbackProcessing(question, curQuestion); // Process the question data
+//         course.fbQs.push(question);
+      
+//       } else if ((question.id != curQuestion.questionId) && (course.fbQIds.indexOf(curQuestion.questionId) > 0)) { // If the question exists to the course but isn't sequencial
+//         var qid = curQuestion.questionId;
+//         var question = course.fbQs.find(q => q.id === qid); // Set question object to the current found question in the course
+//         question = feedbackProcessing(question, curQuestion); // Proecess the question data
+        
+//       } else { // Question is known and sequencial
+//         question = feedbackProcessing(question, curQuestion); // Proecess the question data
+//       }
+
+//     } else if (course.id === curQuestion.courseId) { // Course is known and sequencial
+
+//       if (course.fbQIds.indexOf(curQuestion.questionId) < 0){ // if the question is new to the course
+//         var question = new AQR(curQuestion.courseFbSetId, curQuestion.questionId, curQuestion.question);
+//         questionids.push(question.id);
+//         course.fbQIds.push(question.id);
+//         question = getFbQType(question, curQuestion.label); // create the proper response collection points
+//         question = feedbackProcessing(question, curQuestion); // Process the question data
+//         course.fbQs.push(question);
+      
+//       } else if ((question.id != curQuestion.questionId) && (course.fbQIds.indexOf(curQuestion.questionId) > 0)) { // If the question exists to the course but isn't sequencial
+//         var qid = curQuestion.questionId;
+//         var question = course.fbQs.find(q => q.id === qid); // Set question object to the current found question in the course
+//         question = feedbackProcessing(question, curQuestion); // Proecess the question data
+        
+//       } else { // Question is known and sequencial
+//         question = feedbackProcessing(question, curQuestion); // Proecess the question data
+//       }
+
+//     }
+
+//   }
+//   return coursesList;
+// }
+
+
+
 function feedbackAnalysis(data) {
   var coursesList = [];
   var courseids = [];
@@ -324,65 +429,74 @@ function feedbackAnalysis(data) {
   }
 
   for (var i = 0; i < data.length; i++){
+
     var curQuestion = data[i];
 
-    if (courseids.indexOf(curQuestion.courseId) < 0) { // If the course does not yet exist, create a new course
-      var course = new ACF(curQuestion.courseName, curQuestion.courseId); // Make course and question objects
-      var question = new AQR(curQuestion.courseFbSetId, curQuestion.questionId, curQuestion.question);
-      
-      courseids.push(course.id); // Add course and question ids to global list of known ids
-      questionids.push(question.id);
-      course.fbQIds.push(question.id); // Add question ids to list of known ids related to the course
-      question = getFbQType(question, curQuestion.label); // Create the proper response collection points
-      question = feedbackProcessing(question, curQuestion); // Process the question data
-      course.fbQs.push(question);
-      coursesList.push(course); // Push the course object to list of courses
+    if (relevantQuestion(curQuestion.question)){
 
-    } else if ((course.id != curQuestion.courseId) && (courseids.indexOf(curQuestion.courseId) > 0)) { // If the course does exist, but isn't sequencial
-      var id = curQuestion.courseId;
-      var course = coursesList.find(c => c.id === id); // Set course object to the current question's course
-
-      if (course.fbQIds.indexOf(curQuestion.questionId) < 0){ // if the question is new to the course
+      if (courseids.indexOf(curQuestion.courseId) < 0) { // If the course does not yet exist, create a new course
+        var course = new ACF(curQuestion.courseName, curQuestion.courseId); // Make course and question objects
         var question = new AQR(curQuestion.courseFbSetId, curQuestion.questionId, curQuestion.question);
+        
+        courseids.push(course.id); // Add course and question ids to global list of known ids
         questionids.push(question.id);
-        course.fbQIds.push(question.id);
-        question = getFbQType(question, curQuestion.label); // create the proper response collection points
+        course.fbQIds.push(question.id); // Add question ids to list of known ids related to the course
+        question = getFbQType(question, curQuestion.label); // Create the proper response collection points
         question = feedbackProcessing(question, curQuestion); // Process the question data
         course.fbQs.push(question);
-      
-      } else if ((question.id != curQuestion.questionId) && (course.fbQIds.indexOf(curQuestion.questionId) > 0)) { // If the question exists to the course but isn't sequencial
-        var qid = curQuestion.questionId;
-        var question = course.fbQs.find(q => q.id === qid); // Set question object to the current found question in the course
-        question = feedbackProcessing(question, curQuestion); // Proecess the question data
-        
-      } else { // Question is known and sequencial
-        question = feedbackProcessing(question, curQuestion); // Proecess the question data
-      }
+        coursesList.push(course); // Push the course object to list of courses
 
-    } else if (course.id === curQuestion.courseId) { // Course is known and sequencial
+      } else if ((course.id != curQuestion.courseId) && (courseids.indexOf(curQuestion.courseId) > 0)) { // If the course does exist, but isn't sequencial
+        var id = curQuestion.courseId;
+        var course = coursesList.find(c => c.id === id); // Set course object to the current question's course
 
-      if (course.fbQIds.indexOf(curQuestion.questionId) < 0){ // if the question is new to the course
-        var question = new AQR(curQuestion.courseFbSetId, curQuestion.questionId, curQuestion.question);
-        questionids.push(question.id);
-        course.fbQIds.push(question.id);
-        question = getFbQType(question, curQuestion.label); // create the proper response collection points
-        question = feedbackProcessing(question, curQuestion); // Process the question data
-        course.fbQs.push(question);
-      
-      } else if ((question.id != curQuestion.questionId) && (course.fbQIds.indexOf(curQuestion.questionId) > 0)) { // If the question exists to the course but isn't sequencial
-        var qid = curQuestion.questionId;
-        var question = course.fbQs.find(q => q.id === qid); // Set question object to the current found question in the course
-        question = feedbackProcessing(question, curQuestion); // Proecess the question data
+        if (course.fbQIds.indexOf(curQuestion.questionId) < 0){ // if the question is new to the course
+          var question = new AQR(curQuestion.courseFbSetId, curQuestion.questionId, curQuestion.question);
+          questionids.push(question.id);
+          course.fbQIds.push(question.id);
+          question = getFbQType(question, curQuestion.label); // create the proper response collection points
+          question = feedbackProcessing(question, curQuestion); // Process the question data
+          course.fbQs.push(question);
         
-      } else { // Question is known and sequencial
-        question = feedbackProcessing(question, curQuestion); // Proecess the question data
+        } else if ((question.id != curQuestion.questionId) && (course.fbQIds.indexOf(curQuestion.questionId) > 0)) { // If the question exists to the course but isn't sequencial
+          var qid = curQuestion.questionId;
+          var question = course.fbQs.find(q => q.id === qid); // Set question object to the current found question in the course
+          question = feedbackProcessing(question, curQuestion); // Proecess the question data
+          
+        } else { // Question is known and sequencial
+          question = feedbackProcessing(question, curQuestion); // Proecess the question data
+        }
+
+      } else if (course.id === curQuestion.courseId) { // Course is known and sequencial
+
+        if (course.fbQIds.indexOf(curQuestion.questionId) < 0){ // if the question is new to the course
+          var question = new AQR(curQuestion.courseFbSetId, curQuestion.questionId, curQuestion.question);
+          questionids.push(question.id);
+          course.fbQIds.push(question.id);
+          question = getFbQType(question, curQuestion.label); // create the proper response collection points
+          question = feedbackProcessing(question, curQuestion); // Process the question data
+          course.fbQs.push(question);
+        
+        } else if ((question.id != curQuestion.questionId) && (course.fbQIds.indexOf(curQuestion.questionId) > 0)) { // If the question exists to the course but isn't sequencial
+          var qid = curQuestion.questionId;
+          var question = course.fbQs.find(q => q.id === qid); // Set question object to the current found question in the course
+          question = feedbackProcessing(question, curQuestion); // Proecess the question data
+          
+        } else { // Question is known and sequencial
+          question = feedbackProcessing(question, curQuestion); // Proecess the question data
+        }
+
       }
 
     }
 
   }
+
   return coursesList;
 }
+
+
+
 
 function fullMetricAnalysis(data) {
   // TODO: Find out what feilds are needed to be aggregated in total for the full metrics

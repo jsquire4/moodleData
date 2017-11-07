@@ -57,6 +57,7 @@
 
 {{#eq report.reportType "feedback"}}
 <h2>Aggregate Feedback Per Course from {{report.fromDate}} to {{report.toDate}}</h2>
+
 {{#each report.data}}
 <h5 class = "feedback-course-title">{{this.name}} -- Id: {{this.id}}</h5>
 <div class = "feedback-block">
@@ -84,6 +85,61 @@
           {{/eq}}
         {{/each}}
       </tr>
+
+      <tr>
+        <td>Total Strongly Disagree</td>
+        {{#each this.fbQs}}
+          {{#eq qType "Rank"}}
+            <td>{{responses.stronglyDisagree}}</td>
+          {{/eq}}
+        {{/each}}
+      </tr>
+
+      <tr>
+        <td>Total Disagree</td>
+        {{#each this.fbQs}}
+          {{#eq qType "Rank"}}
+            <td>{{responses.disagree}}</td>
+          {{/eq}}
+        {{/each}}
+      </tr>
+
+      <tr>
+        <td>Total Neutral</td>
+        {{#each this.fbQs}}
+          {{#eq qType "Rank"}}
+            <td>{{responses.neutral}}</td>
+          {{/eq}}
+        {{/each}}
+      </tr>
+
+      <tr>
+        <td>Total Agree</td>
+        {{#each this.fbQs}}
+          {{#eq qType "Rank"}}
+            <td>{{responses.agree}}</td>
+          {{/eq}}
+        {{/each}}
+      </tr>
+
+      <tr>
+        <td>Total Strongly Agree</td>
+        {{#each this.fbQs}}
+          {{#eq qType "Rank"}}
+            <td>{{responses.stronglyAgree}}</td>
+          {{/eq}}
+        {{/each}}
+      </tr>
+
+      <tr>
+        <td>Total Strongly Agree</td>
+        {{#each this.fbQs}}
+          {{#eq qType "Rank"}}
+            <td>{{responses.stronglyAgree}}</td>
+          {{/eq}}
+        {{/each}}
+      </tr>
+
       <tr>
         <td>Number of Responses</th>
         {{#each this.fbQs}}
@@ -94,6 +150,7 @@
           {{/eq}}
         {{/each}}
       </tr>
+
     </tbody>
   </table>
 </div>

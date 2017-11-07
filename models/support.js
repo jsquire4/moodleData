@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-
+ 
 var supportTicketSchema = new Schema({
   userid: {
     type: String
@@ -47,6 +47,35 @@ var supportTicketSchema = new Schema({
 
 var Ticket = module.exports =  mongoose.model('Ticket', supportTicketSchema);
 
+function getAdminPending(callback){
+  Ticket.find({resolved: false}, 'subject body', function(err, data){
+    if (err) throw err;
+    return (null, data);
+  });
+}
+
+
+function getUserPending(user, callback){
+  Ticket.find({resolved: false, userid: user.id}, 'subject body', function(err, data){
+    if (err) throw err;
+    return (null, data);
+  });
+}
+
+function getAdminCompleted(callback){
+  Ticket.find({resolved: true}, 'subject body', function(err, data){
+    if (err) throw err;
+    return (null, data);
+  });
+}
+
+function getUserCompleted(user, callback){
+  Ticket.find({resolved: true, userid: user.id}, 'subject body', function(err, data){
+    if (err) throw err;
+    return (null, data);
+  });
+}
+
 module.exports.updateTicket = function(ticketId, updatedTicket, callback) {
   // TO DO: Create mailing function taht notifies the user and rest of admin when a ticket is resolved
   var query = {_id: ticketId};
@@ -62,41 +91,77 @@ module.exports.getTicketById = function(ticketId, callback){
   Ticket.findbyId(ticketId, callback);
 }
 
-module.exports.getTickets = function(user, callback){
+module.exports.getTickets1 = function(user, callback){
  var pending;
  var completed;
-
+ debugger;
   if (user.admin) {
     
-
-    pending = Ticket.find({resolved: false}, 'subject body', function(err, data){
+    getAdminPending(function(err, ptickets){
       if (err) throw err;
-      return data;
+      callback(null, ptickets);
+
+        // getAdminCompleted(function(err, ctickets){
+        //   if(err) throw err;
+        //   completed = ctickets;
+        //   debugger;
+        //   callback(null, {pending: pending, completed: completed});
+        // });
+
     });
-
-    completed = Ticket.find({resolved: true}, 'subject body', function(err, data){
-      if (err) throw err;
-      return data;
-    });
-
-
-
 
   } else {
-    pending = Ticket.find({resolved: false, userid: user.id}, 'subject body', function(err, data){
-      if (err) throw err;
-      return data;
-    });
 
-    completed = Ticket.find({resolved: true, userid: user.id}, 'subject body', function(err, data){
+    getUserPending(user, function(err, ptickets){
       if (err) throw err;
-      return data;
+      callback(null, ptickets);
+
+        // getUserCompleted(user, function(err, ctickets){
+        //   if(err) throw err;
+        //   completed = ctickets;
+        //   debugger;
+        //   callback(null, {pending: pending, completed: completed});
+        // });
+
     });
   }
 
-  var data = {pending: pending, completed: completed, user: user};
-  callback(null, data);
 }
+
+module.exports.getTickets = function(user, callback){
+ var pending;
+ var completed;
+  Ticket.find({resolved: false}, 'subject body', callback);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

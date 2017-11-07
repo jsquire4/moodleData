@@ -13,12 +13,11 @@ router.get('/submitted', function(req, res){
 });
 
 router.get('/tickets', isLoggedIn, function(req, res){
-
-  // Just allow users to pass through to the support area for now
   var user = req.user;
 
   Ticket.getTickets(user, function(err, data){
     if (err) throw err;
+    debugger;
     res.render('tickets', {data: data});
   });
 });
@@ -88,8 +87,6 @@ router.post('/', isLoggedIn, function(req, res){
   }
 });
 
-i
-
 function ensureAdmin(req, res, next){
   if(req.isAuthenticated()){
     if (req.user.admin){
@@ -98,6 +95,15 @@ function ensureAdmin(req, res, next){
       req.flash('error_msg', "You are not permitted to see that page, talk to an administrator for access");
       res.redirect('/');
     }
+  } else {
+    req.flash('error_msg', 'You are not logged in.  Log in or register to continue.');
+    res.redirect('/users/login');
+  }
+}
+
+function isLoggedIn(req, res, next){
+  if(req.isAuthenticated()){
+    next();
   } else {
     req.flash('error_msg', 'You are not logged in.  Log in or register to continue.');
     res.redirect('/users/login');

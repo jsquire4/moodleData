@@ -22,19 +22,19 @@ Array.prototype.sum = function(){
   return this.reduce(function(a,b){
     return a+b;
   });
-}
+};
 
 Array.prototype.min = function(){
   return this.reduce(function(a,b){
     return Math.min(a, b);
   });
-}
+};
 
 Array.prototype.max = function(){
   return this.reduce(function(a,b){
     return Math.max(a, b);
   });
-}
+};
 
 // FUNCTIONAL AIDS
 function getAvg(arr){ return (arr.sum()/arr.length);
@@ -93,13 +93,11 @@ function relevantQuestion(question){
 
 
   if (regexMatch(question, comMetQs.q1) || regexMatch(question, comMetQs.q2) || regexMatch(question, comMetQs.q3) || regexMatch(question, comMetQs.q4) || regexMatch(question, comMetQs.q5)){
-    return true
+    return true;
   } else {
-    return false
+    return false;
   }
-
 }
-
 
 function feedbackProcessing(question, curQuestion){
   question = answerProcessing(question, curQuestion);
@@ -192,10 +190,14 @@ function getQuery(reportType){
   } else if (reportType == "grades") {
     return "SELECT u.id AS 'userId', c.id As 'courseId', c.fullname AS 'courseName', gi.itemname AS 'itemName', ROUND (gg.finalgrade, 2) AS 'grade', DATE_FORMAT(FROM_UNIXTIME(gg.timemodified), '%Y-%m-%d') AS 'dateTime' FROM mdl_course AS c JOIN mdl_context AS ctx ON c.id = ctx.instanceid JOIN mdl_role_assignments AS ra ON ra.contextid = ctx.id JOIN mdl_user AS u ON u.id = ra.userid JOIN mdl_grade_grades AS gg ON gg.userid = u.id JOIN mdl_grade_items AS gi ON gi.id = gg.itemid JOIN mdl_course_categories AS cc ON cc.id = c.category WHERE (gi.itemname LIKE '%re%est%' OR gi.itemname LIKE'%ost%est%') AND (gg.timemodified IS NOT NULL) AND (gi.courseid = c.id) ORDER BY dateTime ASC, userId ASC, courseName ASC";
   
-  } else if (reportType == "fullmetrics") {
-    
-    // TODO: Create db query that is fit for finding all the needed common metrics
+  } else if (reportType == "ehbUsers") {
+    return "SELECT u.firstname, u.lastname, uid.userid, uid.fieldid, uid.data, uif.name FROM mdl_user_info_data AS uid JOIN mdl_user_info_field AS uif ON uid.fieldid = uif.id JOIN mdl_user AS u ON uid.userid = u.id ORDER BY uid.userid ASC;";
 
+  } else if (reportType == "ehbCourses") {
+    return "";
+
+  } else if (reportType == "fullmetrics") {
+    // TODO: Create db query that is fit for finding all the needed common metrics
     return "SELECT * FROM mdl_user;";
   
   } else {
@@ -227,6 +229,19 @@ function filterResults(fromDate, toDate, results){
   }
 
   return results;
+}
+
+function filterOneResult(fromDate, toDate, record){
+  var begDate = new Date(fromDate);
+  var endDate = new Date(toDate);
+
+  var recordDate = new Date(record.timestart);
+
+  if (begDate > recordDate || recordDate > endDate) {
+    return null;
+  } else {
+    return record;
+  }
 }
 
 function runAnalysis(results, reportType){
@@ -321,91 +336,6 @@ function gradeAnalysis(data) {
   return data;
 }
 
-// function feedbackAnalysis(data) {
-//   var coursesList = [];
-//   var courseids = [];
-//   var questionids = [];
-
-//   function ACF(name, id) { //ACF = Aggregate Course Feedback; For each course compile all question objects
-//     this.name = name;
-//     this.id = id;
-//     this.fbQs =[];
-//     this.fbQIds = [];
-//   }
-
-//   function AQR(fbSetId, questionId, question){ // AQR = Aggregate Question Responses; For each question, record all responses
-//     this.setId = fbSetId;
-//     this.id = questionId;
-//     this.question = question;
-//     this.qType = '';
-//     this.responses;
-//     this.numResponses = 0;
-//     this.avgResponse = 0;
-//   }
-
-//   for (var i = 0; i < data.length; i++){
-//     var curQuestion = data[i];
-
-//     if (courseids.indexOf(curQuestion.courseId) < 0) { // If the course does not yet exist, create a new course
-//       var course = new ACF(curQuestion.courseName, curQuestion.courseId); // Make course and question objects
-//       var question = new AQR(curQuestion.courseFbSetId, curQuestion.questionId, curQuestion.question);
-      
-//       courseids.push(course.id); // Add course and question ids to global list of known ids
-//       questionids.push(question.id);
-//       course.fbQIds.push(question.id); // Add question ids to list of known ids related to the course
-//       question = getFbQType(question, curQuestion.label); // Create the proper response collection points
-//       question = feedbackProcessing(question, curQuestion); // Process the question data
-//       course.fbQs.push(question);
-//       coursesList.push(course); // Push the course object to list of courses
-
-//     } else if ((course.id != curQuestion.courseId) && (courseids.indexOf(curQuestion.courseId) > 0)) { // If the course does exist, but isn't sequencial
-//       var id = curQuestion.courseId;
-//       var course = coursesList.find(c => c.id === id); // Set course object to the current question's course
-
-//       if (course.fbQIds.indexOf(curQuestion.questionId) < 0){ // if the question is new to the course
-//         var question = new AQR(curQuestion.courseFbSetId, curQuestion.questionId, curQuestion.question);
-//         questionids.push(question.id);
-//         course.fbQIds.push(question.id);
-//         question = getFbQType(question, curQuestion.label); // create the proper response collection points
-//         question = feedbackProcessing(question, curQuestion); // Process the question data
-//         course.fbQs.push(question);
-      
-//       } else if ((question.id != curQuestion.questionId) && (course.fbQIds.indexOf(curQuestion.questionId) > 0)) { // If the question exists to the course but isn't sequencial
-//         var qid = curQuestion.questionId;
-//         var question = course.fbQs.find(q => q.id === qid); // Set question object to the current found question in the course
-//         question = feedbackProcessing(question, curQuestion); // Proecess the question data
-        
-//       } else { // Question is known and sequencial
-//         question = feedbackProcessing(question, curQuestion); // Proecess the question data
-//       }
-
-//     } else if (course.id === curQuestion.courseId) { // Course is known and sequencial
-
-//       if (course.fbQIds.indexOf(curQuestion.questionId) < 0){ // if the question is new to the course
-//         var question = new AQR(curQuestion.courseFbSetId, curQuestion.questionId, curQuestion.question);
-//         questionids.push(question.id);
-//         course.fbQIds.push(question.id);
-//         question = getFbQType(question, curQuestion.label); // create the proper response collection points
-//         question = feedbackProcessing(question, curQuestion); // Process the question data
-//         course.fbQs.push(question);
-      
-//       } else if ((question.id != curQuestion.questionId) && (course.fbQIds.indexOf(curQuestion.questionId) > 0)) { // If the question exists to the course but isn't sequencial
-//         var qid = curQuestion.questionId;
-//         var question = course.fbQs.find(q => q.id === qid); // Set question object to the current found question in the course
-//         question = feedbackProcessing(question, curQuestion); // Proecess the question data
-        
-//       } else { // Question is known and sequencial
-//         question = feedbackProcessing(question, curQuestion); // Proecess the question data
-//       }
-
-//     }
-
-//   }
-//   return coursesList;
-// }
-
-
-
 function feedbackAnalysis(data) {
   var coursesList = [];
   var courseids = [];
@@ -495,20 +425,183 @@ function feedbackAnalysis(data) {
   return coursesList;
 }
 
-
-
-
 function fullMetricAnalysis(data) {
   // TODO: Find out what feilds are needed to be aggregated in total for the full metrics
   // TODO: After getting the needed information, calculate the needed statistics
   return data;
 }
 
+function parseInfoEHB(moodleUser, fieldid, data){
+  // Predefined fieldids from moodle database make this annoying, but whatever
+  if (fieldid == 1){ // State
+    moodleUser.state = data;
+  } else if (fieldid == 2){ // Organization Name
+    moodleUser.orgName = data;
+  } else if (fieldid == 3){ // Profession, primary area of work or study
+    moodleUser.profession = data;
+  } else if (fieldid == 4){ // Where do you practice?
+    moodleUser.practice = data;
+  } else if (fieldid == 5){ // Organization a primary care setting?
+    moodleUser.primaryCare = data;
+  } else if (fieldid == 6){ // Is it medically underserved?
+    moodleUser.underServedCom = data;
+  } else if (fieldid == 7){ // Is it in a rural area?
+    moodleUser.ruralArea = data;
+  } else if (fieldid == 8){ // Years in public health practice
+    moodleUser.numYearsAtPractice = data;
+  } else if (fieldid == 9){ // City
+    moodleUser.city = data;
+  } else if (fieldid == 10){ // Country
+    moodleUser.country = data;
+  } else if (fieldid == 11){ // If listed other as profession, what is your profession?
+    moodleUser.otherProf = data;
+  }
+  
+  return moodleUser;
+}
+
+function enrollmentProcessing(course, student){
+  if(course.students.indexOf(student.id) < 0){ // Making sure that every course has only one enrollment per student
+    course.students.push(student.id);
+
+    if (student.primaryCare == "yes" || student.primaryCare == true){
+      course.numTrainedPrimaryCare += 1;
+    }
+
+    if (student.underServedCom == "yes" || student.underServedCom == true){
+      course.numMedUnderServed += 1;
+    }
+
+    if (student.ruralArea == "yes" || student.ruralArea == true){
+      course.numRuralArea += 1;
+    }
+
+    var sid = student.it;
+    var profession = student.profession;
+    var studentProfessionInfo = {sid: profession};
+    course.OtherProfessions.push(studentProfessionInfo);
+  }
+
+  return course;
+}
+
+function indexUsers(data){
+  var userIds = [];
+  var usersList = [];
+
+  function moodleUser(id, firstname, lastname) {
+    this.id = id;
+    this.name  = firstname + " " + lastname;
+    this.state = '';
+    this.orgName = '';
+    this.profession = '';
+    this.practice = '';
+    this.primaryCare = '';
+    this.underServedCom = '';
+    this.ruralArea = '';
+    this.numYearsAtPractice = '';
+    this.city = '';
+    this.country = '';
+    this.otherProf = '';
+  }
+
+  for (var i = 0; i < data.length; i++){
+      var record = data[i];
+      if (userIds.indexOf(record.userid) < 0){
+        moodleUser = new moodleUser(record.userid, record.firstname, record.lastname);
+        moodleUser = parseInfoEHB(moodleUser, record.fieldid, record.data);
+        usersList.push(moodleUser);
+        userIds.push(moodleUser.id);
+      } else if (record.userid == moodleUser.id) {
+        moodleUser = parseInfoEHB(moodleUser, record.fieldid, record.data);
+      } else if ((userIds.indexOf(record.userid) >= 0) && (record.userid != moodleUser.id)){
+        var uid = record.userid;
+        moodleUser = usersList.find(u => u.id === uid);
+        moodleUser = parseInfoEHB(moodleUser, record.fieldid, record.data);
+      }
+    }
+
+  return usersList;
+}
+
+function indexCoursesWithEnrolledUsers(data, usersList){
+  var courseIds = [];
+  var coursesList = [];
+
+  function courseEnrollment(name, id){
+    this.id = id;
+    this.name = name;
+    this.students = [];
+    this.numTrainedPrimaryCare = 0;
+    this.numMedUnderServed = 0;
+    this.numRuralArea = 0;
+    this.numTrainedByCourse = this.students.length;
+    this.numTrainedProf1 = 0;
+    this.numTrainedProf2 = 0;
+    this.numTrainedProf3 = 0;
+    this.numTrainedProf4 = 0;
+    this.numTrainedProf5 = 0;
+    this.numTrainedProf6 = 0;
+    this.numTrainedProfOther = 0;
+    this.otherProfessions = [];
+  }
+
+  for(var i = 0; i < data.length; i++){
+    var record = filterOneResult(fromDate, toDate, data[i]);
+    if (record) {
+      if (courseIds.indexOf(record.courseid) < 0){
+        course = new courseEnrollment(record.fullname, record.courseid);
+        var sid = record.userid;
+        student = usersList.find(u => u.id === sid);
+        course = enrollmentProcessing(course, student);
+        coursesList.push(course);
+      } else if ((courseIds.indexOf(record.courseid) >= 0) && (record.courseid != course.id)){
+        var cid = record.courseId;
+        course = coursesList.find(c => c.id === cid);
+        var sid = record.userid;
+        student = usersList.find(u => u.id === sid);
+        course = enrollmentProcessing(course, student);
+      } else {
+        var sid = record.userid;
+        student = usersList.find(u => u.id === sid);
+        course = enrollmentProcessing(course, student);
+      }
+    }
+  }
+
+  return coursesList;
+}
+
+function ehbReport(fromDate, toDate, callback){
+  var usersList;
+  var coursesList;
+
+  var query = getQuery("ehbUsers");
+  queryDB(query, function(err, data){
+    if (err) throw err;
+    usersList = indexUsers(data);
+
+    query = getQuery("ehbCourses");
+    queryDB(query, function(err, data){
+      if (err) throw err;
+      coursesList = indexCoursesWithEnrolledUsers(data, usersList);
+      callback(null, coursesList);
+    });
+  });
+}
+
 //PUBLIC FUNCTIONS
 module.exports.getReport = function(fromDate, toDate, reportType, callback){
-  var query = getQuery(reportType);
 
-  if (query) { 
+  if (reportType == "ehb"){
+    ehbReport(fromData, toDate, function(err, results){ // have a different function for this report type, since its more complicated
+      if(err) throw err;
+      callback(err, results);
+    });
+
+  } else {
+    var query = getQuery(reportType);
+    if (query) { 
     var results;
     
     queryDB(query, function(err, results){
@@ -523,31 +616,32 @@ module.exports.getReport = function(fromDate, toDate, reportType, callback){
         callback(null, report);
       
       } else {
-        var err = new Error('Invalid Date Range');
+        err = new Error('Invalid Date Range');
         results = "There was an error, please try again";
         callback(err, results);
       }
-
     });
     
-  } else {
-    var err = new Error('Invalid Report Type');
-    var results = "There was an error, plase try again";
-    callback(err, results);
+    } else {
+      var err = new Error('Invalid Report Type');
+      var results = "There was an error, plase try again";
+      callback(err, results);
+    }
+
   }
-}
+};
 
 module.exports.customReport = function(fromDate, toDate, tables, callback){
   // TODO: Process a custom query somehow
   var results = "There is nothing here yet";
   callback(null, results);
-}
+};
 
 module.exports.showFullData = function(fromDate, toDate, reportType, callback){
   // TODO: Create process for loading all the requested data in a usable way
   var results = "Nothing so far";
   callback(null, results);
-}
+};
 
 
 

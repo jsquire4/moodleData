@@ -476,20 +476,39 @@ function enrollmentProcessing(course, student){
       course.numRuralArea += 1;
     }
 
-    var sid = student.it;
-    var profession = student.profession;
-    var studentProfessionInfo = {sid: profession};
-    course.OtherProfessions.push(studentProfessionInfo);
+    var sid = student.id;
+
+    if (student.otherProf != '') {
+      var otherProf = student.otherProf;
+      var profession = {"Other": otherProf};
+      var studentProfessionInfo = {sid: profession};
+      course.professions.push(studentProfessionInfo);
+
+    } else {
+      var profession = student.profession;
+      var studentProfessionInfo = {sid: profession};
+      course.professions.push(studentProfessionInfo);
+    }
   }
 
   return course;
+}
+
+function sumProfessions(courses){
+  debugger;
+  
+  for (var i = 0; i < courses.length; i++){
+    var course = courses[i];
+
+  }
+
 }
 
 function indexUsers(data){
   var userIds = [];
   var usersList = [];
 
-  function moodleUser(id, firstname, lastname) {
+  function Student(id, firstname, lastname) {
     this.id = id;
     this.name  = firstname + " " + lastname;
     this.state = '';
@@ -508,7 +527,7 @@ function indexUsers(data){
   for (var i = 0; i < data.length; i++){
       var record = data[i];
       if (userIds.indexOf(record.userid) < 0){
-        moodleUser = new moodleUser(record.userid, record.firstname, record.lastname);
+        moodleUser = new Student(record.userid, record.firstname, record.lastname);
         moodleUser = parseInfoEHB(moodleUser, record.fieldid, record.data);
         usersList.push(moodleUser);
         userIds.push(moodleUser.id);
@@ -536,14 +555,14 @@ function indexCoursesWithEnrolledUsers(data, usersList){
     this.numMedUnderServed = 0;
     this.numRuralArea = 0;
     this.numTrainedByCourse = this.students.length;
-    this.numTrainedProf1 = 0;
-    this.numTrainedProf2 = 0;
-    this.numTrainedProf3 = 0;
-    this.numTrainedProf4 = 0;
-    this.numTrainedProf5 = 0;
-    this.numTrainedProf6 = 0;
-    this.numTrainedProfOther = 0;
-    this.otherProfessions = [];
+    this.professions = [];
+    this.prof1;
+    this.prof2;
+    this.prof3;
+    this.prof4;
+    this.prof5;
+    this.prof6;
+    this.profOther;
   }
 
   for(var i = 0; i < data.length; i++){
@@ -585,6 +604,7 @@ function ehbReport(fromDate, toDate, callback){
     queryDB(query, function(err, data){
       if (err) throw err;
       coursesList = indexCoursesWithEnrolledUsers(data, usersList);
+      coursesList = sumProfessions(coursesList);
       callback(null, coursesList);
     });
   });
@@ -594,7 +614,7 @@ function ehbReport(fromDate, toDate, callback){
 module.exports.getReport = function(fromDate, toDate, reportType, callback){
 
   if (reportType == "ehb"){
-    ehbReport(fromData, toDate, function(err, results){ // have a different function for this report type, since its more complicated
+    ehbReport(fromDate, toDate, function(err, results){ // have a different function for this report type, since its more complicated
       if(err) throw err;
       callback(err, results);
     });

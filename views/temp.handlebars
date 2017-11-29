@@ -1,0 +1,44 @@
+{{#each report.data}}
+<h5 class = "feedback-course-title">{{this.name}} -- Id: {{this.id}}</h5>
+<div class = "feedback-block">
+  <table class = "feedback-table table table-striped">
+    <thead class = "thead">
+      <tr>
+        <th>Question</th>
+        <th>Total Strongly Disagree</th>
+        <th>% Strongly Disagree</th>
+        <th>Total Disagree</th>
+        <th>% Disagree</th>
+        <th>Total Neutral</th>
+        <th>% Neutral</th>
+        <th>Total Agree</th>
+        <th>% Agree</th>
+        <th>Total Strongly Agree</th>
+        <th>% Strongly Agree</th>
+        <th>Average Response</th>
+        <th>Total Repsonses</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each this.fbQs}}
+      <tr>
+        {{#eq qType "Rank"}}
+          <td>{{question}}</td>
+          <td>{{responses.stronglyDisagree}}</td>
+          <td>{{responsePercentages.stronglyDisagree}}</td>
+          <td>{{responses.disagree}}</td>
+          <td>{{responsePercentages.disagree}}</td>
+          <td>{{responses.neutral}}</td>
+          <td>{{responsePercentages.neutral}}</td>
+          <td>{{responses.agree}}</td>
+          <td>{{responsePercentages.agree}}</td>
+          <td>{{responses.stronglyAgree}}</td>
+          <td>{{responsePercentages.stronglyAgree}}</td>
+          <td>{{avgResponse}} /5</td>
+          <td>{{numResponses}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>
+{{/each}}

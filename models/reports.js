@@ -194,11 +194,7 @@ function getQuery(reportType){
     return "SELECT u.firstname, u.lastname, uid.userid, uid.fieldid, uid.data, uif.name FROM mdl_user_info_data AS uid JOIN mdl_user_info_field AS uif ON uid.fieldid = uif.id JOIN mdl_user AS u ON uid.userid = u.id ORDER BY uid.userid ASC;";
 
   } else if (reportType == "ehbCourses") {
-    return "";
-
-  } else if (reportType == "fullmetrics") {
-    // TODO: Create db query that is fit for finding all the needed common metrics
-    return "SELECT * FROM mdl_user;";
+    return "SELECT e.courseid, DATE_FORMAT(FROM_UNIXTIME(ue.timestart), '%Y-%m-%d') AS 'dateTime', ue.userid, c.fullname FROM mdl_enrol AS e JOIN mdl_user_enrolments AS ue ON e.id = ue.enrolid JOIN mdl_course AS c ON e.courseid = c.id ORDER BY e.courseid ASC, ue.userid DESC;";
   
   } else {
     return null;
@@ -216,27 +212,20 @@ function queryDB(query, callback){
 function filterResults(fromDate, toDate, results){
   var begDate = new Date(fromDate);
   var endDate = new Date(toDate);
-  
   for (var i = 0; i < results.length; i++){
     var curDate = new Date(results[i].dateTime);
-
     if (begDate > curDate || curDate > endDate) {
       results.splice(i, 1);
       i = i - 1;
     }
-
-
   }
-
   return results;
 }
 
 function filterOneResult(fromDate, toDate, record){
   var begDate = new Date(fromDate);
   var endDate = new Date(toDate);
-
-  var recordDate = new Date(record.timestart);
-
+  var recordDate = new Date(record.dateTime);
   if (begDate > recordDate || recordDate > endDate) {
     return null;
   } else {
@@ -292,7 +281,7 @@ function auditEnrollmentAnalysis(data){
   return coursesList;
 }
 
-function gradeAnalysis(data) {
+function gradeAnalysis(data){
   // data is an arrary of objects each of which includes: userId, courseId, courseName, grade, and graded(as a date)
   var courseList = [];
   var courseids = [];
@@ -336,7 +325,7 @@ function gradeAnalysis(data) {
   return data;
 }
 
-function feedbackAnalysis(data) {
+function feedbackAnalysis(data){
   var coursesList = [];
   var courseids = [];
   var questionids = [];
@@ -425,43 +414,44 @@ function feedbackAnalysis(data) {
   return coursesList;
 }
 
-function fullMetricAnalysis(data) {
+function fullMetricAnalysis(data){
   // TODO: Find out what feilds are needed to be aggregated in total for the full metrics
   // TODO: After getting the needed information, calculate the needed statistics
   return data;
 }
 
-function parseInfoEHB(moodleUser, fieldid, data){
+function parseInfoEHB(student, fieldid, data){
   // Predefined fieldids from moodle database make this annoying, but whatever
   if (fieldid == 1){ // State
-    moodleUser.state = data;
+    student.state = data;
   } else if (fieldid == 2){ // Organization Name
-    moodleUser.orgName = data;
+    student.orgName = data;
   } else if (fieldid == 3){ // Profession, primary area of work or study
-    moodleUser.profession = data;
+    student.profession = data;
   } else if (fieldid == 4){ // Where do you practice?
-    moodleUser.practice = data;
+    student.practice = data;
   } else if (fieldid == 5){ // Organization a primary care setting?
-    moodleUser.primaryCare = data;
+    student.primaryCare = data;
   } else if (fieldid == 6){ // Is it medically underserved?
-    moodleUser.underServedCom = data;
+    student.underServedCom = data;
   } else if (fieldid == 7){ // Is it in a rural area?
-    moodleUser.ruralArea = data;
+    student.ruralArea = data;
   } else if (fieldid == 8){ // Years in public health practice
-    moodleUser.numYearsAtPractice = data;
+    student.numYearsAtPractice = data;
   } else if (fieldid == 9){ // City
-    moodleUser.city = data;
+    student.city = data;
   } else if (fieldid == 10){ // Country
-    moodleUser.country = data;
+    student.country = data;
   } else if (fieldid == 11){ // If listed other as profession, what is your profession?
-    moodleUser.otherProf = data;
+    student.otherProf = data;
   }
   
-  return moodleUser;
+  return student;
 }
 
 function enrollmentProcessing(course, student){
-  if(course.students.indexOf(student.id) < 0){ // Making sure that every course has only one enrollment per student
+
+  if((student) && (course.students.indexOf(student.id) < 0)){ // Ensure student exists and only has one enrollment per course 
     course.students.push(student.id);
 
     if (student.primaryCare == "yes" || student.primaryCare == true){
@@ -481,12 +471,12 @@ function enrollmentProcessing(course, student){
     if (student.otherProf != '') {
       var otherProf = student.otherProf;
       var profession = {"Other": otherProf};
-      var studentProfessionInfo = {sid: profession};
+      var studentProfessionInfo = {id: sid, profession: profession};
       course.professions.push(studentProfessionInfo);
 
     } else {
       var profession = student.profession;
-      var studentProfessionInfo = {sid: profession};
+      var studentProfessionInfo = {id: sid, profession: profession};
       course.professions.push(studentProfessionInfo);
     }
   }
@@ -501,12 +491,11 @@ function sumProfessions(courses){
     var course = courses[i];
 
   }
-
 }
 
-function indexUsers(data){
-  var userIds = [];
-  var usersList = [];
+function indexStudents(data){
+  var studentIds = [];
+  var studentsList = [];
 
   function Student(id, firstname, lastname) {
     this.id = id;
@@ -526,24 +515,24 @@ function indexUsers(data){
 
   for (var i = 0; i < data.length; i++){
       var record = data[i];
-      if (userIds.indexOf(record.userid) < 0){
-        moodleUser = new Student(record.userid, record.firstname, record.lastname);
-        moodleUser = parseInfoEHB(moodleUser, record.fieldid, record.data);
-        usersList.push(moodleUser);
-        userIds.push(moodleUser.id);
-      } else if (record.userid == moodleUser.id) {
-        moodleUser = parseInfoEHB(moodleUser, record.fieldid, record.data);
-      } else if ((userIds.indexOf(record.userid) >= 0) && (record.userid != moodleUser.id)){
-        var uid = record.userid;
-        moodleUser = usersList.find(u => u.id === uid);
-        moodleUser = parseInfoEHB(moodleUser, record.fieldid, record.data);
+      if (studentIds.indexOf(record.userid) < 0){
+        student = new Student(record.userid, record.firstname, record.lastname);
+        student = parseInfoEHB(student, record.fieldid, record.data);
+        studentsList.push(student);
+        studentIds.push(student.id);
+      } else if (record.userid == student.id) {
+        student = parseInfoEHB(student, record.fieldid, record.data);
+      } else if ((studentIds.indexOf(record.userid) >= 0) && (record.userid != student.id)){
+        var sid = record.userid;
+        student = studentsList.find(s => s.id === sid);
+        student = parseInfoEHB(student, record.fieldid, record.data);
       }
     }
 
-  return usersList;
+  return studentsList;
 }
 
-function indexCoursesWithEnrolledUsers(data, usersList){
+function indexCoursesWithEnrolledStudents(data, studentsList, fromDate, toDate){
   var courseIds = [];
   var coursesList = [];
 
@@ -571,40 +560,41 @@ function indexCoursesWithEnrolledUsers(data, usersList){
       if (courseIds.indexOf(record.courseid) < 0){
         course = new courseEnrollment(record.fullname, record.courseid);
         var sid = record.userid;
-        student = usersList.find(u => u.id === sid);
+        student = studentsList.find(u => u.id === sid);
         course = enrollmentProcessing(course, student);
+        courseIds.push(course.id);
         coursesList.push(course);
       } else if ((courseIds.indexOf(record.courseid) >= 0) && (record.courseid != course.id)){
         var cid = record.courseId;
         course = coursesList.find(c => c.id === cid);
         var sid = record.userid;
-        student = usersList.find(u => u.id === sid);
+        student = studentsList.find(u => u.id === sid);
         course = enrollmentProcessing(course, student);
       } else {
         var sid = record.userid;
-        student = usersList.find(u => u.id === sid);
+        student = studentsList.find(u => u.id === sid);
         course = enrollmentProcessing(course, student);
       }
     }
   }
-
   return coursesList;
 }
 
 function ehbReport(fromDate, toDate, callback){
-  var usersList;
+  var studentsList;
   var coursesList;
 
   var query = getQuery("ehbUsers");
   queryDB(query, function(err, data){
     if (err) throw err;
-    usersList = indexUsers(data);
+    studentsList = indexStudents(data);
 
     query = getQuery("ehbCourses");
     queryDB(query, function(err, data){
       if (err) throw err;
-      coursesList = indexCoursesWithEnrolledUsers(data, usersList);
+      coursesList = indexCoursesWithEnrolledStudents(data, studentsList, fromDate, toDate);
       coursesList = sumProfessions(coursesList);
+      debugger;
       callback(null, coursesList);
     });
   });

@@ -314,6 +314,11 @@ button:focus, input[type="button"]:focus {
   margin-bottom: 10px;
 }
 
+.ehb-block {
+  overflow: scroll;
+  margin-bottom: 10px;
+}
+
 
 /* SUPPORT SUMBIT, TICKETS, VIEW, AND UPDATE */
 

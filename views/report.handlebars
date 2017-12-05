@@ -1,26 +1,25 @@
 {{#eq report.reportType "audit"}}
-<h2>Audit Enrolment Per Course from {{report.fromDate}} to {{report.toDate}}</h2>
-<table id = "audit-table" class="table table-striped">
-  <thead class="thead">
-    <tr>
-      <th>Course Name</th>
-      <th>Number of Students Auditing Course </th>
-    </tr>
-  </thead>
-  <tbody>
-  {{#each report.data}}
-    <tr>
-      <td>{{this.name}}</td>
-      <td>{{this.count}}</td>
-    </tr>
-  {{/each}}
-  </tbody>
-</table>
+  <h2>Audit Enrolment Per Course from {{report.fromDate}} to {{report.toDate}}</h2>
+  <table id = "audit-table" class="table table-striped">
+    <thead class="thead">
+      <tr>
+        <th>Course Name</th>
+        <th>Number of Students Auditing Course </th>
+      </tr>
+    </thead>
+    <tbody>
+    {{#each report.data}}
+      <tr>
+        <td>{{this.name}}</td>
+        <td>{{this.count}}</td>
+      </tr>
+    {{/each}}
+    </tbody>
+  </table>
 {{/eq}}
 
-
 {{#eq report.reportType "grades"}}
-<h2>Grade Data Per Course from {{report.fromDate}} to {{report.toDate}}</h2>
+  <h2>Grade Data Per Course from {{report.fromDate}} to {{report.toDate}}</h2>
   <table id = "grade-table" class="table table-striped">
   <thead class="thead">
     <tr>
@@ -56,103 +55,157 @@
 {{/eq}}
 
 {{#eq report.reportType "feedback"}}
-<h2>Aggregate Feedback Per Course from {{report.fromDate}} to {{report.toDate}}</h2>
+  <h2>Aggregate Feedback Per Course from {{report.fromDate}} to {{report.toDate}}</h2>
 
-{{#each report.data}}
-<h5 class = "feedback-course-title">{{this.name}} -- Id: {{this.id}}</h5>
-<div class = "feedback-block">
-  <table class = "feedback-table table table-striped">
-    <thead class = "thead">
-      <tr>
-        <th>Question</th>
-        {{#each this.fbQs}}
-          {{#eq this.qType "FreeResponse"}}
-          {{else}}
-          <th>{{question}}</th>
-          {{/eq}}
+  {{#each report.data}}
+  <h5 class = "feedback-course-title">{{this.name}} -- Id: {{this.id}}</h5>
+  <div class = "feedback-block">
+    <table class = "feedback-table table table-striped">
+      <thead class = "thead">
+        <tr>
+          <th>Question</th>
+          {{#each this.fbQs}}
+            {{#eq this.qType "FreeResponse"}}
+            {{else}}
+            <th>{{question}}</th>
+            {{/eq}}
+          {{/each}}
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Average Response</td> 
+          {{#each this.fbQs}}
+            {{#eq qType "Rank"}}
+              <td>{{avgResponse}} /5</td>
+            {{/eq}}
+            {{#eq qType "TrueFalse"}}
+              <td>True: {{avgResponse.Positive}}%  False: {{avgResponse.Negative}}%</td>
+            {{/eq}}
+          {{/each}}
+        </tr>
+
+        <tr>
+          <td>Total Strongly Disagree</td>
+          {{#each this.fbQs}}
+            {{#eq qType "Rank"}}
+              <td>{{responses.stronglyDisagree}}</td>
+            {{/eq}}
+          {{/each}}
+        </tr>
+
+        <tr>
+          <td>Total Disagree</td>
+          {{#each this.fbQs}}
+            {{#eq qType "Rank"}}
+              <td>{{responses.disagree}}</td>
+            {{/eq}}
+          {{/each}}
+        </tr>
+
+        <tr>
+          <td>Total Neutral</td>
+          {{#each this.fbQs}}
+            {{#eq qType "Rank"}}
+              <td>{{responses.neutral}}</td>
+            {{/eq}}
+          {{/each}}
+        </tr>
+
+        <tr>
+          <td>Total Agree</td>
+          {{#each this.fbQs}}
+            {{#eq qType "Rank"}}
+              <td>{{responses.agree}}</td>
+            {{/eq}}
+          {{/each}}
+        </tr>
+
+        <tr>
+          <td>Total Strongly Agree</td>
+          {{#each this.fbQs}}
+            {{#eq qType "Rank"}}
+              <td>{{responses.stronglyAgree}}</td>
+            {{/eq}}
+          {{/each}}
+        </tr>
+
+        <tr>
+          <td>Total Strongly Agree</td>
+          {{#each this.fbQs}}
+            {{#eq qType "Rank"}}
+              <td>{{responses.stronglyAgree}}</td>
+            {{/eq}}
+          {{/each}}
+        </tr>
+
+        <tr>
+          <td>Number of Responses</th>
+          {{#each this.fbQs}}
+            {{#eq qType "FreeResponse"}}
+
+            {{else}}
+              <td>{{numResponses}}</td>
+            {{/eq}}
+          {{/each}}
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+  {{/each}}
+{{/eq}}
+
+
+{{#eq report.reportType "ehb"}}
+  <h2>EHB Report {{report.fromDate}} to {{report.toDate}}</h2>
+  <div class = "ehb-block">
+    <table class = "feedback-table table table-striped">
+      <thead class = "thead">
+        <tr>
+          <th>Course Title</th>
+          <th>Course Id</th>
+          <th>Number of Individuals Trained in a Primary Care Setting</th>
+          <th>Number of Individuals Trained in a Medically Underserved Community</th>
+          <th>Number of Individuals Trained in a Rural Area</th>
+          <th>Total Number of Individuals Trained</th>
+          <th>Profession and Discipline of Individuals Trained (1)</th>
+          <th>Number of Individuals Trained in this Profession and Discipline</th>
+          <th>Profession and Discipline of Individuals Trained (2)</th>
+          <th>Number of Individuals Trained in this Profession and Discipline</th>
+          <th>Profession and Discipline of Individuals Trained (3)</th>
+          <th>Number of Individuals Trained in this Profession and Discipline</th>
+          <th>Profession and Discipline of Individuals Trained (4)</th>
+          <th>Number of Individuals Trained in this Profession and Discipline</th>
+          <th>Profession and Discipline of Individuals Trained (5)</th>
+          <th>Number of Individuals Trained in this Profession and Discipline</th>
+          <th>Profession and Discipline of Individuals Trained (6)</th>
+          <th>Number of Individuals Trained in this Profession and Discipline</th>
+          <th>Other Professions</th>
+          <th>Number of Remaining Individuals for this Course</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each report.data}}
+        <tr>
+          <td>{{this.name}}</td>
+          <td>{{this.id}}</td>
+          <td>{{this.numTrainedPrimaryCare}}</td>
+          <td>{{this.numMedUnderServed}}</td>
+          <td>{{this.numRuralArea}}</td>
+          <td>{{this.numTrainedByCourse}}</td>
+
+            {{#each this.sortedProfessions}}
+              <td>{{this.profession}}</td>
+              <td>{{this.count}}</td>
+            {{/each}}
+        </tr>
         {{/each}}
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Average Response</td> 
-        {{#each this.fbQs}}
-          {{#eq qType "Rank"}}
-            <td>{{avgResponse}} /5</td>
-          {{/eq}}
-          {{#eq qType "TrueFalse"}}
-            <td>True: {{avgResponse.Positive}}%  False: {{avgResponse.Negative}}%</td>
-          {{/eq}}
-        {{/each}}
-      </tr>
+      </tbody>
+    </table>
+  </div>
+  
 
-      <tr>
-        <td>Total Strongly Disagree</td>
-        {{#each this.fbQs}}
-          {{#eq qType "Rank"}}
-            <td>{{responses.stronglyDisagree}}</td>
-          {{/eq}}
-        {{/each}}
-      </tr>
 
-      <tr>
-        <td>Total Disagree</td>
-        {{#each this.fbQs}}
-          {{#eq qType "Rank"}}
-            <td>{{responses.disagree}}</td>
-          {{/eq}}
-        {{/each}}
-      </tr>
-
-      <tr>
-        <td>Total Neutral</td>
-        {{#each this.fbQs}}
-          {{#eq qType "Rank"}}
-            <td>{{responses.neutral}}</td>
-          {{/eq}}
-        {{/each}}
-      </tr>
-
-      <tr>
-        <td>Total Agree</td>
-        {{#each this.fbQs}}
-          {{#eq qType "Rank"}}
-            <td>{{responses.agree}}</td>
-          {{/eq}}
-        {{/each}}
-      </tr>
-
-      <tr>
-        <td>Total Strongly Agree</td>
-        {{#each this.fbQs}}
-          {{#eq qType "Rank"}}
-            <td>{{responses.stronglyAgree}}</td>
-          {{/eq}}
-        {{/each}}
-      </tr>
-
-      <tr>
-        <td>Total Strongly Agree</td>
-        {{#each this.fbQs}}
-          {{#eq qType "Rank"}}
-            <td>{{responses.stronglyAgree}}</td>
-          {{/eq}}
-        {{/each}}
-      </tr>
-
-      <tr>
-        <td>Number of Responses</th>
-        {{#each this.fbQs}}
-          {{#eq qType "FreeResponse"}}
-
-          {{else}}
-            <td>{{numResponses}}</td>
-          {{/eq}}
-        {{/each}}
-      </tr>
-
-    </tbody>
-  </table>
-</div>
-{{/each}}
+  
 {{/eq}}

@@ -1,8 +1,8 @@
 var mysql = require('mysql');
 require('datejs');
 require('dotenv').config();
+var util = require('util');
 
-// MY_SQL CONNECTION
 var connection = mysql.createConnection({
   host: process.env.MYSQL_HOST,
   port: process.env.MYSQL_PORT,
@@ -17,7 +17,6 @@ connection.connect(function(err){
 
 var Reporter = module.exports;
 
-// NEW ARRAY METHODS
 Array.prototype.sum = function(){
   return this.reduce(function(a,b){
     return a+b;
@@ -36,14 +35,12 @@ Array.prototype.max = function(){
   });
 };
 
-// FUNCTIONAL AIDS
 function getAvg(arr){ return (arr.sum()/arr.length);
 }
 
 function regexMatch(str, rule){ return new RegExp("^" + rule.split("*").join(".*") + "$").test(str);
 }
 
-// PRIVATE FUNCTIONS
 function regexAndScoreProcessing(course, curCourse){
   
   if (regexMatch(curCourse.itemName, '*re*est*')){ //Should really have better naming conventions for pre and post tests
@@ -467,18 +464,60 @@ function enrollmentProcessing(course, student){
     }
 
     var sid = student.id;
+    var profession = student.profession;
+    var studentProfessionInfo = {id: sid, profession: profession};
+    course.professions.push(studentProfessionInfo);
+  
+  }
 
+  return course;
+}
+
+function listTopProfessions(course, professionsList){
+
+  var topProfessions = {};
+
+  for (var k = 0; k < professionsList.length; k++) {
+   topProfessions[professionsList[k]] = (topProfessions[professionsList[k]] || 0) + 1;
+  }
+
+  for (var prof in topProfessions) {
+    if (topProfessions.hasOwnProperty(prof)) {
+      var curProf = topProfessions[prof];
+
+    }
+  }
+  
+  profSorted = Object.keys(topProfessions).sort(function(a,b){
+    return topProfessions[a]-topProfessions[b];
+  });
+
+<<<<<<< HEAD
     if (student.otherProf != "None" && student.otherProf != '') {
       var otherProf = student.otherProf;
       var profession = {"Other": otherProf};
       var studentProfessionInfo = {id: sid, profession: profession};
       course.professions.push(studentProfessionInfo);
+=======
+  profSorted = profSorted.reverse();
+>>>>>>> ed05fbcfad63ef44e3f7e9f9541431fdb5a34bd1
 
+  for (var k = 0; k < 6; k++){
+    if(profSorted[k]){
+      course.sortedProfessions[k] = {profession: profSorted[k], count: topProfessions[profSorted[k]]};
     } else {
-      var profession = student.profession;
-      var studentProfessionInfo = {id: sid, profession: profession};
-      course.professions.push(studentProfessionInfo);
+      course.sortedProfessions[k] = {profession: "None", count: "0"};
     }
+  }
+
+  if (profSorted.length > 7){
+    var count = 0;
+    for (var k = 7; k < profSorted.length; k++){
+      count = count + topProfessions[profSorted[k]];
+    }
+    course.sortedProfessions[6] = {profession: "Remaining Professions", count: count};
+  } else {
+    course.sortedProfessions[6] = {profession: "Remaining Professions", count: 0};
   }
 
   return course;
@@ -486,6 +525,7 @@ function enrollmentProcessing(course, student){
 
 // TODO: Sum up the top professions per course
 function sumProfessions(courses){
+<<<<<<< HEAD
   
   for (var i = 0; i < courses.length; i++){
     var professionsList = [];
@@ -505,7 +545,21 @@ function sumProfessions(courses){
     }
 
     debugger;
+=======
+
+  for (var i = 0; i < courses.length; i++){
+    var course = courses[i];
+    var professionsList = [];
+
+    for (var j = 0; j < course.professions.length; j++){
+      professionsList.push(course.professions[j].profession);   
+    }
+
+    course = listTopProfessions(course, professionsList);
+>>>>>>> ed05fbcfad63ef44e3f7e9f9541431fdb5a34bd1
   }
+
+  return courses;
 }
 
 function indexStudents(data){
@@ -609,13 +663,13 @@ function ehbReport(fromDate, toDate, callback){
   });
 }
 
-//PUBLIC FUNCTIONS
 module.exports.getReport = function(fromDate, toDate, reportType, callback){
 
   if (reportType == "ehb"){
     ehbReport(fromDate, toDate, function(err, results){ // have a different function for this report type, since its more complicated
       if(err) throw err;
-      callback(err, results);
+      var report = {data: results, reportType: reportType, fromDate: fromDate, toDate: toDate};
+      callback(err, report);
     });
 
   } else {
@@ -661,9 +715,3 @@ module.exports.showFullData = function(fromDate, toDate, reportType, callback){
   var results = "Nothing so far";
   callback(null, results);
 };
-
-
-
-
-
-

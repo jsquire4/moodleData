@@ -14,6 +14,7 @@
   var MongoStore = require('connect-mongo')(session);
   var mysql = require('mysql');
   var helpers = require('handlebars-helpers')();
+  var util = require('util');
   
 
   var fs = require('fs');

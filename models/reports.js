@@ -468,7 +468,7 @@ function enrollmentProcessing(course, student){
 
     var sid = student.id;
 
-    if (student.otherProf != '') {
+    if (student.otherProf != "None" && student.otherProf != '') {
       var otherProf = student.otherProf;
       var profession = {"Other": otherProf};
       var studentProfessionInfo = {id: sid, profession: profession};
@@ -484,12 +484,27 @@ function enrollmentProcessing(course, student){
   return course;
 }
 
+// TODO: Sum up the top professions per course
 function sumProfessions(courses){
-  debugger;
   
   for (var i = 0; i < courses.length; i++){
-    var course = courses[i];
+    var professionsList = [];
+    var professions = courses[i].professions;
 
+    for (var j = 0; j < professions.length; j++){
+      var profession = professions[j].profession;
+
+      if (profession.Other){
+        courses[i].professionCount[other] += 1;
+      }
+      // } else if (courses[i].professionCount {
+      //   courses[i].professionCount[profession] += 1;
+      // } else {
+      //   courses[i].professionCount[profession] = 1;
+      // }
+    }
+
+    debugger;
   }
 }
 
@@ -543,15 +558,10 @@ function indexCoursesWithEnrolledStudents(data, studentsList, fromDate, toDate){
     this.numTrainedPrimaryCare = 0;
     this.numMedUnderServed = 0;
     this.numRuralArea = 0;
-    this.numTrainedByCourse = this.students.length;
+    this.numTrainedByCourse =  0;
     this.professions = [];
-    this.prof1;
-    this.prof2;
-    this.prof3;
-    this.prof4;
-    this.prof5;
-    this.prof6;
-    this.profOther;
+    this.professionsCount = {other: 0};
+    this.profOther = "None";
   }
 
   for(var i = 0; i < data.length; i++){
@@ -594,7 +604,6 @@ function ehbReport(fromDate, toDate, callback){
       if (err) throw err;
       coursesList = indexCoursesWithEnrolledStudents(data, studentsList, fromDate, toDate);
       coursesList = sumProfessions(coursesList);
-      debugger;
       callback(null, coursesList);
     });
   });

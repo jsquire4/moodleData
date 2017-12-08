@@ -2,7 +2,8 @@ var express = require('express');
 var router = express.Router();
 
 var Ticket = require("../models/support");
-var User = require('../models/user');
+var User = require("../models/user");
+
 
 router.get('/', isLoggedIn, function(req, res){
   res.render('support');

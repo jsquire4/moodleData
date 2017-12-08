@@ -492,15 +492,7 @@ function listTopProfessions(course, professionsList){
     return topProfessions[a]-topProfessions[b];
   });
 
-<<<<<<< HEAD
-    if (student.otherProf != "None" && student.otherProf != '') {
-      var otherProf = student.otherProf;
-      var profession = {"Other": otherProf};
-      var studentProfessionInfo = {id: sid, profession: profession};
-      course.professions.push(studentProfessionInfo);
-=======
   profSorted = profSorted.reverse();
->>>>>>> ed05fbcfad63ef44e3f7e9f9541431fdb5a34bd1
 
   for (var k = 0; k < 6; k++){
     if(profSorted[k]){
@@ -523,29 +515,7 @@ function listTopProfessions(course, professionsList){
   return course;
 }
 
-// TODO: Sum up the top professions per course
 function sumProfessions(courses){
-<<<<<<< HEAD
-  
-  for (var i = 0; i < courses.length; i++){
-    var professionsList = [];
-    var professions = courses[i].professions;
-
-    for (var j = 0; j < professions.length; j++){
-      var profession = professions[j].profession;
-
-      if (profession.Other){
-        courses[i].professionCount[other] += 1;
-      }
-      // } else if (courses[i].professionCount {
-      //   courses[i].professionCount[profession] += 1;
-      // } else {
-      //   courses[i].professionCount[profession] = 1;
-      // }
-    }
-
-    debugger;
-=======
 
   for (var i = 0; i < courses.length; i++){
     var course = courses[i];
@@ -556,7 +526,6 @@ function sumProfessions(courses){
     }
 
     course = listTopProfessions(course, professionsList);
->>>>>>> ed05fbcfad63ef44e3f7e9f9541431fdb5a34bd1
   }
 
   return courses;
@@ -612,10 +581,9 @@ function indexCoursesWithEnrolledStudents(data, studentsList, fromDate, toDate){
     this.numTrainedPrimaryCare = 0;
     this.numMedUnderServed = 0;
     this.numRuralArea = 0;
-    this.numTrainedByCourse =  0;
+    this.numTrainedByCourse = this.students.length;
     this.professions = [];
-    this.professionsCount = {other: 0};
-    this.profOther = "None";
+    this.sortedProfessions = [];
   }
 
   for(var i = 0; i < data.length; i++){

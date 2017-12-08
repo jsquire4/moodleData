@@ -1,7 +1,8 @@
 var express = require('express');
 var router = express.Router();
 
-var Reporter = require("../models/reports")
+var Reporter = require("../models/reports");
+var EhbReport = require("../models/ehb");
 
 router.get('/index', ensureVerification, function(req, res){
   res.render('reportindex');
@@ -11,11 +12,25 @@ router.post('/report', ensureVerification, function(req, res){
   var reportType = req.body.reporttype;
   var fromDate = req.body.fromdate;
   var toDate = req.body.todate;
-  Reporter.getReport(fromDate, toDate, reportType, function(err, report){
-    if (err) throw err;
-    res.render('report', {report: report});
-  });
+
+  if (reportType == "ehb"){
+    
+    EhbReport.createCourses(fromDate, toDate, function(err, report){
+      EhbReport.listCourses(function(err, courses){
+        res.render('ehbReportCreator', {courses: courses});
+      });
+    });
+
+  } else {
+    Reporter.getReport(fromDate, toDate, reportType, function(err, report){
+      if (err) throw err;
+      res.render('report', {report: report});
+    });
+  }
+    
 });
+
+router.get('/')
 
 function ensureVerification(req, res, next){
   if(req.isAuthenticated()){
@@ -31,5 +46,6 @@ function ensureVerification(req, res, next){
     res.redirect('/users/login');
   }
 }
-
+ 
 module.exports = router;  
+

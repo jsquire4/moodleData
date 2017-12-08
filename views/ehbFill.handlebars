@@ -1,0 +1,58 @@
+{{#eq report.reportType "ehb"}}
+  <h2>EHB Report {{report.fromDate}} to {{report.toDate}}</h2>
+  {{#each report.data}}
+
+
+  {{/each}}
+
+
+
+
+
+
+  <div class = "ehb-block">
+    <table class = "feedback-table table table-striped">
+      <thead class = "thead">
+        <tr>
+          <th>Course Title</th>
+          <th>Course Id</th>
+          <th>Number of Individuals Trained in a Primary Care Setting</th>
+          <th>Number of Individuals Trained in a Medically Underserved Community</th>
+          <th>Number of Individuals Trained in a Rural Area</th>
+          <th>Total Number of Individuals Trained</th>
+          <th>Profession and Discipline of Individuals Trained (1)</th>
+          <th>Number of Individuals Trained in this Profession and Discipline</th>
+          <th>Profession and Discipline of Individuals Trained (2)</th>
+          <th>Number of Individuals Trained in this Profession and Discipline</th>
+          <th>Profession and Discipline of Individuals Trained (3)</th>
+          <th>Number of Individuals Trained in this Profession and Discipline</th>
+          <th>Profession and Discipline of Individuals Trained (4)</th>
+          <th>Number of Individuals Trained in this Profession and Discipline</th>
+          <th>Profession and Discipline of Individuals Trained (5)</th>
+          <th>Number of Individuals Trained in this Profession and Discipline</th>
+          <th>Profession and Discipline of Individuals Trained (6)</th>
+          <th>Number of Individuals Trained in this Profession and Discipline</th>
+          <th>Other Professions</th>
+          <th>Number of Remaining Individuals for this Course</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each report.data}}
+        <tr>
+          <td>{{this.name}}</td>
+          <td>{{this.id}}</td>
+          <td>{{this.numTrainedPrimaryCare}}</td>
+          <td>{{this.numMedUnderServed}}</td>
+          <td>{{this.numRuralArea}}</td>
+          <td>{{this.numTrainedByCourse}}</td>
+
+            {{#each this.sortedProfessions}}
+              <td>{{this.profession}}</td>
+              <td>{{this.count}}</td>
+            {{/each}}
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+{{/eq}}

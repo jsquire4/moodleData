@@ -23,12 +23,12 @@ var ehbCourseSchema = new Schema({
   },
 
   courseName: {
-    type: String
+    type: String,
     default: "None"
   },
 
   lps: {
-    type: String
+    type: String,
     default: "None"
   },
 
@@ -38,7 +38,7 @@ var ehbCourseSchema = new Schema({
   },
 
   reportingPeriodTo: {
-    type: Date
+    type: Date,
     default: new Date()
   },
 
@@ -142,7 +142,7 @@ var ehbCourseSchema = new Schema({
     default: 0
   },
 
-  professsion2: {
+  profession2: {
     type: String,
     default: "None"
   },
@@ -195,6 +195,11 @@ var ehbCourseSchema = new Schema({
   numProfOther: {
     type: Number,
     default: 0
+  },
+
+  courseDataCompleted: {
+    type: String,
+    default: "Incomplete"
   }
 });
 
@@ -451,6 +456,12 @@ function saveCourse(cCourse, fromDate, toDate, callback){
   course.save(callback);
 }
 
+function clearOldCourses(callback){
+  EhbCourse.remove({}, function(err, removed){
+    callback(err, removed);
+  });
+}
+
 function fillReport(fromDate, toDate, callback){
   var studentsList;
   var coursesList;
@@ -466,14 +477,28 @@ function fillReport(fromDate, toDate, callback){
       coursesList = indexCoursesWithEnrolledStudents(data, studentsList, fromDate, toDate);
       coursesList = sumProfessions(coursesList);
       
-      for (var i = 0; i < coursesList.length; i++){
-        var cCourse = coursesList[i];
-        saveCourse(cCourse, fromDate, toDate, function(err, data){
-          if (err) throw err;
-          console.log("Saved: " + data);
-        });
-      }
-      callback(null, coursesList);
+      clearOldCourses(function(err, data){
+
+        for (var i = 0; i < coursesList.length; i++){
+
+          var cCourse = coursesList[i];
+
+          if (i == (coursesList.length - 1)){ // trying to avoid callback hell
+            saveCourse(cCourse, fromDate, toDate, function(err, data){
+              if (err) throw err;
+              callback(null, coursesList);
+            });
+
+          } else {
+            var cCourse = coursesList[i];
+            saveCourse(cCourse, fromDate, toDate, function(err, data){
+              if (err) throw err;
+            });
+          }
+
+        }
+
+      });
     });
   });
 }
@@ -523,7 +548,7 @@ module.exports.getCourses = function(callback){
 }
 
 module.exports.listCourses = function(callback){
-  EhbCourse.find({}, {courseName: 1, courseId: 1}, function(err, courses){
+  EhbCourse.find({}, {courseName: 1, courseId: 1, courseDataCompleted: 1, _id: 1}, function(err, courses){
     if (err) throw err;
     callback(null, courses);
   });

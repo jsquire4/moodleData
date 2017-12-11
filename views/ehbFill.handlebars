@@ -1,58 +1,135 @@
-{{#eq report.reportType "ehb"}}
-  <h2>EHB Report {{report.fromDate}} to {{report.toDate}}</h2>
-  {{#each report.data}}
+<div class = "ehb-form-block">
+      <form class = "ehb-form">
+        <input class = "ehb-text-field" type = "text" name = "ehblps" placeholder = "ex. LPHI" required>LPS
+        <input class = "ehb-date-field" type = "date" name = "ehbdateoftraining">DATE OF TRAINING
+        <input class = "ehb-text-field" type = "text" name = "ehbcontactname">CONTACT NAME
+        <input class = "ehb-text-field" type = "checkbox" name = "ehbappcontedu">APPROVED FOR CONTINUING EDUCATION
+        <input class = "ehb-text-field" type = "text" name = "ehbdurhours">DURATION HOURS
+        <input class = "ehb-text-field" type = "text" name = "ehbnumtimesoffered">NUMBER OF TIMES TRAINING WAS OFFERED
+        
+        <select class = "ehb-select-field" name = "ehbdeliverymode">
+          <option value="" disabled="disabled" selected="selected">Select a delivery mode</option>
+          <option value = "Archived/Self-paced Distance Learning">Archived/Self-paced Distance Learning</option>
+          <option value = "Classroom-based">Classroom-based</option>
+          <option value = "Hybrid">Hybrid</option>
+          <option value = "Real-time/Live Distance Learning">Real-time/Live Distance Learning</option>
+        </select>
 
+        <select class = "ehb-select-field" name = "ehbpartnership1">
+          <option value="" disabled="disabled" selected="selected">Select a partnership or consortia</option>
+          <option value = "No partners/consortia used">No partners/consortia used</option>
+          <option value = "Academic department - outside the institution">Academic department - outside the institution</option>
+          <option value = "Academic department - within the institution">Academic department - within the institution</option>
+          <option value = "Acute Care for the Elderly (ACE) Units">Acute Care for the Elderly (ACE) Units</option>
+          <option value = "Alzheimer's Association/Chapters">Alzheimer's Association/Chapters</option>
+          <option value = "Alzheimer's Disease Resource Centers">Alzheimer's Disease Resource Centers</option>
+          <option value = "Ambulatory Practice Sites">Ambulatory Practice Sites</option>
+          <option value = "Area Agencies on Aging">Area Agencies on Aging</option>
+          <option value = "Community - based health center (e.g.; free clinic)">Community - based health center (e.g.; free clinic)</option>
+          <option value = "Community Health Center (CHC)">Community Health Center (CHC)</option>
+          <option value = "Community Mental Health Center">Community Mental Health Center</option>
+          <option value = "Day and home care programs (i.e. Home Health)">Day and home care programs (i.e. Home Health)</option>
+          <option value = "Educational institution (Grades K - 12)">Educational institution (Grades K - 12)</option>
+          <option value = "Federal Government - AHRQ">Federal Government - AHRQ</option>
+          <option value = "Federal Government - CDC">Federal Government - CDC</option>
+          <option value = "Federal Government - Department of Defense/Military">Federal Government - Department of Defense/Military</option>
+          <option value = "Federal Government - FDA, Federal Government - IHS">Federal Government - FDA, Federal Government - IHS</option>
+          <option value = "Federal Government - NIH, Federal Government - Other">Federal Government - NIH, Federal Government - Other</option>
+          <option value = "Federal Government - Other HHS Agency/Office">Federal Government - Other HHS Agency/Office</option>
+          <option value = "Federal Government - Other HRSA Program">Federal Government - Other HRSA Program</option>
+          <option value = "Federal Government - SAMHSA">Federal Government - SAMHSA</option>
+          <option value = "Federal Government - Veterans Affairs">Federal Government - Veterans Affairs</option>
+          <option value = "FQHC or look-alike">FQHC or look-alike</option>
+          <option value = "Geriatric ambulatory care and comprehensive units">Geriatric ambulatory care and comprehensive units</option>
+          <option value = "Geriatric Behavioral or Mental Health Units">Geriatric Behavioral or Mental Health Units</option>
+          <option value = "Geriatric consultation services">Geriatric consultation services</option>
+          <option value = "Health center (e.g.; free clinic)">Health center (e.g.; free clinic)</option>
+          <option value = "Health department - Local">Health department - Local</option>
+          <option value = "Health department - State">Health department - State</option>
+          <option value = "Health department - Tribal">Health department - Tribal</option>
+          <option value = "Health disparities research center">Health disparities research center</option>
+          <option value = "Health insurance/Healthcare Provider Group (e.g.; PPO/HMO)">Health insurance/Healthcare Provider Group (e.g.; PPO/HMO)</option>
+          <option value = "Health policy center">Health policy center</option>
+          <option value = "Hospice">Hospice</option>
+          <option value = "Hospital">Hospital</option>
+          <option value = "Local Government">Local Government</option>
+          <option value = "Long - Term Care Facility">Long - Term Care Facility</option>
+          <option value = "Nonprofit organization (faith - based)">Nonprofit organization (faith - based)</option>
+          <option value = "Nonprofit organization (non - faith based)">Nonprofit organization (non - faith based)</option>
+          <option value = "Nurse Managed Health Clinics">Nurse Managed Health Clinics</option>
+          <option value = "Nursing Home">Nursing Home</option>
+          <option value = "Physical therapy/Rehabilitation center">Physical therapy/Rehabilitation center</option>
+          <option value = "Private/For - profit organization">Private/For - profit organization</option>
+          <option value = "Professional Associations">Professional Associations</option>
+          <option value = "Quality improvement organization">Quality improvement organization</option>
+          <option value = "Senior Center">Senior Center</option>
+          <option value = "State Government">State Government</option>
+          <option value = "State Governmental Programs">State Governmental Programs</option>
+          <option value = "Tribal Government">Tribal Government</option>
+          <option value = "Tribal Organization">Tribal Organization</option>
+          <option value = "Other">Other</option>
+        </select>
 
-  {{/each}}
+        <select class = "ehb-select-field" name = "ehbprimarytopicarea">
+          <option value="" disabled="disabled" selected="selected">Select the courses primary topic area</option>
+          <option value = "Behavioral Health - Primary Care Integration">Behavioral Health - Primary Care Integration</option>
+          <option value = "Behavioral Health - Substance Abuse - General">Behavioral Health - Substance Abuse - General</option>
+          <option value = "Behavioral Health - Substanse Abuse - Opioids">Behavioral Health - Substanse Abuse - Opioids</option>
+          <option value = "Behavioral Health - Suicide">Behavioral Health - Suicide</option>
+          <option value = "Behavioral Health - Treatment">Behavioral Health - Treatment</option>
+          <option value = "Behavioral Health - Other">Behavioral Health - Other</option>
+          <option value = "Chronic Disease - Alzheimer/Dementia">Chronic Disease - Alzheimer/Dementia</option>
+          <option value = "Chronic Disease - Management">Chronic Disease - Management</option>
+          <option value = "Chronic Disease - Other">Chronic Disease - Other</option>
+          <option value = "Clinical Training - Community-Based Collaboration">Clinical Training - Community-Based Collaboration</option>
+          <option value = "Clinical Training - Cultrual Competency/Health Disparities">Clinical Training - Cultrual Competency/Health Disparities</option>
+          <option value = "Clinical Training - Evidence-based Practice">Clinical Training - Evidence-based Practice</option>
+          <option value = "Clinical Training - Healthcare delivery systems">Clinical Training - Healthcare delivery systems</option>
+          <option value = "Clinical Training - Interprofessional education/team-based training">Clinical Training - Interprofessional education/team-based training</option>
+          <option value = "Clinical Training - Oral Health">Clinical Training - Oral Health</option>
+          <option value = "Clinical Training - Public Health">Clinical Training - Public Health</option>
+          <option value = "Clinical Training - Quality Improvement/Patient Safety">Clinical Training - Quality Improvement/Patient Safety</option>
+          <option value = "Clinical Training - Research">Clinical Training - Research</option>
+          <option value = "Clinical Training - Skills - Communication Skills">Clinical Training - Skills - Communication Skills</option>
+          <option value = "Clinical Training - Skills - Leadership and Managment">Clinical Training - Skills - Leadership and Managment</option>
+          <option value = "Clinical Training - Technology - Simulation-based training">Clinical Training - Technology - Simulation-based training</option>
+          <option value = "Clinical Training - Technology - Other">Clinical Training - Technology - Other</option>
+          <option value = "Clinical Training - Unspecified">Clinical Training - Unspecified</option>
+          <option value = "Infectious Disease - HIV/AIDS">Infectious Disease - HIV/AIDS</option>
+          <option value = "Infectious Disease - Other">Infectious Disease - Other</option>
+          <option value = "Population - Geriatric Health">Population - Geriatric Health</option>
+          <option value = "Population - Maternal Child Health">Population - Maternal Child Health</option>
+          <option value = "Population - Minority Health">Population - Minority Health</option>
+          <option value = "Population - Rural Health">Population - Rural Health</option>
+          <option value = "Population - Veterans Health">Population - Veterans Health</option>
+          <option value = "Population - Womens Health">Population - Womens Health</option>
+          <option value = "Population - Other">Population - Other</option>
+          <option value = "Setting - Medically-Underserved Communities">Setting - Medically-Underserved Communities</option>
+          <option value = "Setting - Primary Care">Setting - Primary Care</option>
+          <option value = "Setting - Rural">Setting - Rural</option>
+          <option value = "Setting - Other">Setting - Other</option>
+          <option value = "Other - Topic Not Listed">Other - Topic Not Listed</option>
+        </select>
 
+        <select class = "ehb-select-field" name = "ehbcompetencytier">
+          <option value="" disabled="disabled" selected="selected">Select the courses competency teir</option>
+          <option value = "Tier 1">Tier 1</option>
+          <option value = "Tier 2">Tier 2</option>
+          <option value = "Tier 3">Tier 3</option>
+        </select>
 
+        <select class = "ehb-select-field" name = "ehbprimarycomp">
+          <option value="" disabled="disabled" selected="selected">Select the courses primary competency</option>
+          <option value = "Analytical/assessment skills">Analytical/assessment skills</option>
+          <option value = "Communication skills">Communication skills</option>
+          <option value = "Community dimensions of practice skills">Community dimensions of practice skills</option>
+          <option value = "Cultural competency skills">Cultural competency skills</option>
+          <option value = "Financial planning and management skills">Financial planning and management skills</option>
+          <option value = "Leadership and systems thinking skills">Leadership and systems thinking skills</option>
+          <option value = "Policy development program planning skills">Policy development program planning skills</option>
+          <option value = "Public health sciences skills">Public health sciences skills</option>
+          <option value = "N/A">N/A</option>
+        </select>
 
-
-
-
-  <div class = "ehb-block">
-    <table class = "feedback-table table table-striped">
-      <thead class = "thead">
-        <tr>
-          <th>Course Title</th>
-          <th>Course Id</th>
-          <th>Number of Individuals Trained in a Primary Care Setting</th>
-          <th>Number of Individuals Trained in a Medically Underserved Community</th>
-          <th>Number of Individuals Trained in a Rural Area</th>
-          <th>Total Number of Individuals Trained</th>
-          <th>Profession and Discipline of Individuals Trained (1)</th>
-          <th>Number of Individuals Trained in this Profession and Discipline</th>
-          <th>Profession and Discipline of Individuals Trained (2)</th>
-          <th>Number of Individuals Trained in this Profession and Discipline</th>
-          <th>Profession and Discipline of Individuals Trained (3)</th>
-          <th>Number of Individuals Trained in this Profession and Discipline</th>
-          <th>Profession and Discipline of Individuals Trained (4)</th>
-          <th>Number of Individuals Trained in this Profession and Discipline</th>
-          <th>Profession and Discipline of Individuals Trained (5)</th>
-          <th>Number of Individuals Trained in this Profession and Discipline</th>
-          <th>Profession and Discipline of Individuals Trained (6)</th>
-          <th>Number of Individuals Trained in this Profession and Discipline</th>
-          <th>Other Professions</th>
-          <th>Number of Remaining Individuals for this Course</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{#each report.data}}
-        <tr>
-          <td>{{this.name}}</td>
-          <td>{{this.id}}</td>
-          <td>{{this.numTrainedPrimaryCare}}</td>
-          <td>{{this.numMedUnderServed}}</td>
-          <td>{{this.numRuralArea}}</td>
-          <td>{{this.numTrainedByCourse}}</td>
-
-            {{#each this.sortedProfessions}}
-              <td>{{this.profession}}</td>
-              <td>{{this.count}}</td>
-            {{/each}}
-        </tr>
-        {{/each}}
-      </tbody>
-    </table>
+      </form>
   </div>
-{{/eq}}

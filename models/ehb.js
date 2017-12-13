@@ -1,4 +1,5 @@
 var mysql = require('mysql');
+var async = require('async');
 require('datejs');
 require('dotenv').config();
 var mongoose = require('mongoose');
@@ -72,22 +73,22 @@ var ehbCourseSchema = new Schema({
     default: "None"
   },
 
-  partnerShips1: {
+  partnerships1: {
     type: String,
     default: "None"
   },
 
-  partnerShips2: {
+  partnerships2: {
     type: String,
     default: "None"
   },
 
-  partnerShips3: {
+  partnerships3: {
     type: String,
     default: "None"
   },
 
-  partnerShips4: {
+  partnerships4: {
     type: String,
     default: "None"
   },
@@ -200,6 +201,10 @@ var ehbCourseSchema = new Schema({
   courseDataCompleted: {
     type: Boolean,
     default: false
+  },
+
+  timeStamp: {
+    type: Date
   }
 });
 
@@ -441,7 +446,7 @@ function saveCourse(cCourse, fromDate, toDate, callback){
     numTrained: cCourse.numTrainedByCourse,
     profession1: cCourse.sortedProfessions[0].profession,
     numProf1: cCourse.sortedProfessions[0].count,
-    professsion2: cCourse.sortedProfessions[1].profession,
+    profession2: cCourse.sortedProfessions[1].profession,
     numProf2: cCourse.sortedProfessions[1].count,
     profession3: cCourse.sortedProfessions[2].profession,
     numProf3: cCourse.sortedProfessions[2].count,
@@ -476,29 +481,51 @@ function fillReport(fromDate, toDate, callback){
       if (err) throw err;
       coursesList = indexCoursesWithEnrolledStudents(data, studentsList, fromDate, toDate);
       coursesList = sumProfessions(coursesList);
-      
-      clearOldCourses(function(err, data){
+      var timeStampNow = new Date();
 
-        for (var i = 0; i < coursesList.length; i++){
-
-          var cCourse = coursesList[i];
-
-          if (i == (coursesList.length - 1)){ // trying to avoid callback hell
-            saveCourse(cCourse, fromDate, toDate, function(err, data){
-              if (err) throw err;
-              callback(null, coursesList);
+      EhbCourse.remove({timeStamp: {$ne: timeStampNow}}, function(err, results){
+        var i = 0;
+        async.eachSeries(coursesList, function(course, next) {
+            course = new EhbCourse ({
+              courseId: course.id,
+              courseName: course.name,
+              reportingPeriodFrom: fromDate,
+              reportingPeriodTo: toDate,
+              locationDataAvail: true,
+              numTrainedPrimaryCare: course.numTrainedPrimaryCare,
+              numTrainedMedUnderServed: course.numMedUnderServed,
+              numTrainedRural: course.numRuralArea,
+              numTrained: course.numTrainedByCourse,
+              profession1: course.sortedProfessions[0].profession,
+              numProf1: course.sortedProfessions[0].count,
+              profession2: course.sortedProfessions[1].profession,
+              numProf2: course.sortedProfessions[1].count,
+              profession3: course.sortedProfessions[2].profession,
+              numProf3: course.sortedProfessions[2].count,
+              profession4: course.sortedProfessions[3].profession,
+              numProf4: course.sortedProfessions[3].count,
+              profession5: course.sortedProfessions[4].profession,
+              numProf5: course.sortedProfessions[4].count,
+              profession6: course.sortedProfessions[5].profession,
+              numProf6: course.sortedProfessions[5].count,
+              numProfOther: course.sortedProfessions[6].count,
+              timeStamp: timeStampNow
             });
 
-          } else {
-            var cCourse = coursesList[i];
-            saveCourse(cCourse, fromDate, toDate, function(err, data){
-              if (err) throw err;
+            course.position = i;
+            
+            course.save(function(err, results){
+              i++;
+              next();
             });
-          }
-
-        }
-
+          }, function(err) {
+            if (err) throw err;
+            console.log("Saving Done!");
+        });
+        if (err) throw err;
+        callback (null, results);
       });
+
     });
   });
 }
@@ -527,12 +554,13 @@ module.exports.updateCourse = function(course, formData, callback){
     durationHours: formData.ehbdurhours,
     numTimesOffered: formData.ehbnumtimesoffered,
     deliveryMode: formData.ehbdeliverymode,
-    partnerShips1: formData.ehbpartnership1,
-    partnerShips2: formData.ehbpartnership2,
-    partnerShips3: formData.ehbpartnership3,
-    partnerShips4: formData.ehbpartnership4,
+    partnerships1: formData.ehbpartnership1,
+    partnerships2: formData.ehbpartnership2,
+    partnerships3: formData.ehbpartnership3,
+    partnerships4: formData.ehbpartnership4,
     coursePrimaryTopicArea: formData.ehbprimarytopicarea,
-    competencyTier: formData.ehbprimarycomp,
+    primaryCompetency: formData.ehbprimarycomp,
+    competencyTier: formData.ehbcompetencytier,
     courseDataCompleted: true
   };
 
@@ -555,3 +583,45 @@ module.exports.listCourses = function(callback){
     callback(null, courses);
   });
 };
+
+/* Quick Schema for reference
+  
+  courseId
+  courseName
+  lps
+  reportingPeriodFrom
+  reportingPeriodTo
+  dateOfTraining
+  contactName
+  approvedContEd
+  durationHours
+  numTimesOffered
+  deliveryMode
+  partnerShips1
+  partnerShips2
+  partnerShips3
+  partnerShips4
+  locationDataAvail
+  numTrainedPrimaryCare
+  numTrainedMedUnderServed
+  numTrainedRural
+  coursePrimaryTopicArea
+  primaryCompetency
+  competencyTier
+  numTrained
+  profession1
+  numProf1
+  profession2
+  numProf2
+  profession3
+  numProf3
+  profession4
+  numProf4
+  profession5
+  numProf5
+  profession6
+  numProf6
+  numProfOther
+  courseDataCompleted
+
+*/

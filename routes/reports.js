@@ -16,7 +16,7 @@ router.post('/report', ensureVerification, function(req, res){
   if (reportType == "ehb"){ 
     EhbReport.createCourses(fromDate, toDate, function(err, report){
       EhbReport.listCourses(function(err, courses){
-        res.render('ehbReportCreator', {courses: courses, fromDate: fromDate.format("M dS Y"), toDate: toDate.format("M dS Y"), returningToSaved: false});
+        res.render('ehbReportCreator', {courses: courses, fromDate: fromDate, toDate: toDate, returningToSaved: false});
       });
     });
   } else {

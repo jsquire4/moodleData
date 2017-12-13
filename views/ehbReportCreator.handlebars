@@ -1,8 +1,8 @@
-<h2>EHB Reports {{fromDate}} to {{toDate}}</h2>
+<h2>EHB Report {{fromDate}} to {{toDate}}</h2>
 {{#each courses}}
   
   <div class = "ehb-course-select-line">
-    {{#eq this.courseDataCompleted "Incomplete"}}
+    {{#eq this.courseDataCompleted false}}
       <i id = "formCheck-{{this.id}}" class="fa fa-times" aria-hidden="true"></i>
     {{else}}
       <i id = "formCheck-{{this.id}}" class="fa fa-check" aria-hidden="true"></i>
@@ -11,15 +11,15 @@
   </div>
 
   <div class="modal fade" id="form-{{this.courseId}}" tabindex="-1" role="dialog" aria-labelledby="ehbCourseName" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content modal-lg">
+        <div class="modal-header modal-lg">
           <h5 class="modal-title" id="ehbCourseName">{{this.courseName}}</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <div class="modal-body" id = "modal-{{this.id}}">
+        <div class="modal-body modal-lg" id = "modal-{{this.id}}">
           <form id = "form-body-{{this.id}}" class = "prebuilt-moodle-reports" method = "post" action = "/reports/ehb/{{this.id}}">
 
             <label for = "ehblps">Reporting LPS</label>
@@ -351,6 +351,7 @@
     e.preventDefault();
     var id = this.getAttribute("data-internalid");
     $.get("/reports/ehb/" + id, function(data, status) {
+      
     });
   });
 
@@ -367,8 +368,11 @@
       type: 'POST',
       data: JSON.stringify(data),
       contentType: 'application/json',
-      url: '/reports/ehb/' + id
-    })
-
+      url: '/reports/ehb/' + id,
+      success: function(){
+        $("#formCheck-" + id).removeClass("fa-times");
+        $("#formCheck-" + id).addClass("fa-check");
+      }
+    });
   });
 </script>

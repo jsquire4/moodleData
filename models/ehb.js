@@ -198,8 +198,8 @@ var ehbCourseSchema = new Schema({
   },
 
   courseDataCompleted: {
-    type: String,
-    default: "Incomplete"
+    type: Boolean,
+    default: false
   }
 });
 
@@ -508,49 +508,50 @@ module.exports.createCourses = function(fromDate, toDate, callback){
     if(err) throw err;
     callback(null, results);
   });
-}
+};
 
 module.exports.getOneCourse = function(courseName, courseId, callback){
   EhbCourse.find({courseName: courseName, courseId: courseId}, function(err, course){
     if (err) throw err;
     callback(null, course);
   });
-}
+};
 
-module.exports.updateCourse = function(courseName, courseId, formData, callback){
+module.exports.updateCourse = function(course, formData, callback){
+
   var courseInfo = {
-    lps: formData.lps,
-    dateOfTraining: formData.dateOfTraining,
-    contactName: formData.contactName,
-    approvedContEd: formData.approvedContEd,
-    durationHours: formData.durationHours,
-    numTimesOffered: formData.numTimesOffered,
-    deliveryMode: formData.deliveryMode,
-    partnerShips1: formData.partnerships1,
-    partnerShips2: formData.partnerships2,
-    partnerShips3: formData.partnerships3,
-    partnerShips4: formData.partnerships4,
-    coursePrimaryTopicArea: formData.coursePrimaryTopicArea,
-    competencyTier: formData.competencyTier
-  }
+    lps: formData.ehblps,
+    dateOfTraining: formData.ehbdateoftraining,
+    contactName: formData.ehbcontactname,
+    approvedContEd: formData.ehbappcontedu,
+    durationHours: formData.ehbdurhours,
+    numTimesOffered: formData.ehbnumtimesoffered,
+    deliveryMode: formData.ehbdeliverymode,
+    partnerShips1: formData.ehbpartnership1,
+    partnerShips2: formData.ehbpartnership2,
+    partnerShips3: formData.ehbpartnership3,
+    partnerShips4: formData.ehbpartnership4,
+    coursePrimaryTopicArea: formData.ehbprimarytopicarea,
+    competencyTier: formData.ehbprimarycomp,
+    courseDataCompleted: true
+  };
 
-  EhbCourse.update({courseName: courseName, courseId: courseId}, courseInfo, function(err, data){
+  EhbCourse.update({courseName: course.courseName, courseId: course.courseId}, courseInfo, function(err, data){
     if (err) throw err;
     callback(null, data);
   });
-}
+};
 
 module.exports.getCourses = function(callback){
   EhbCourse.find({}, function(err, courses){
     if (err) throw err;
     callback(null, courses);
   });
-}
+};
 
 module.exports.listCourses = function(callback){
-  EhbCourse.find({}, {courseName: 1, courseId: 1, courseDataCompleted: 1, _id: 1}, function(err, courses){
+  EhbCourse.find({}, {courseName: 1, courseId: 1, courseDataCompleted: 1, reportingPeriodFrom: 1, reportingPeriodTo: 1,  _id: 1}, function(err, courses){
     if (err) throw err;
     callback(null, courses);
   });
-}
-
+};

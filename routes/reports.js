@@ -1,4 +1,4 @@
-var express = require('express');
+var express = require('express'); 
 var router = express.Router();
 
 var Reporter = require("../models/reports");
@@ -16,7 +16,7 @@ router.post('/report', ensureVerification, function(req, res){
   if (reportType == "ehb"){ 
     EhbReport.createCourses(fromDate, toDate, function(err, report){
       EhbReport.listCourses(function(err, courses){
-        res.render('ehbReportCreator', {courses: courses, fromDate: fromDate, toDate: toDate});
+        res.render('ehbReportCreator', {courses: courses, fromDate: fromDate.format("M dS Y"), toDate: toDate.format("M dS Y"), returningToSaved: false});
       });
     });
   } else {
@@ -27,6 +27,26 @@ router.post('/report', ensureVerification, function(req, res){
   }
 });
 
+/* 
+Coded myself into a corner with the form saving and date parsing....
+
+Sorry to whoever will inherit this.
+
+Also, keep in mind that this runs off of a free MLAB db, so we have to be conscious of the amount of data we store.
+
+Each new report deletes the old one, which isn't ideal, but also not a huge deal since you can just generate a new one with the old dates.
+*/
+
+router.get('/ehb', function(req, res){
+  EhbReport.listCourses(function(err, courses){
+    var fromDate = courses[0].reportingPeriodFrom;
+    var toDate = courses[0].reportingPeriodTo;
+    fromDate = fromDate.format("M dS Y");
+    toDate = toDate.format("M dS Y");
+    if (err) throw err;
+    res.render('ehbReportCreator', {courses: courses, fromDate: fromDate, toDate: toDate, returningToSaved: true}); 
+  });
+});
 
 router.get('/ehb/:course_id', function(req, res) {
   EhbReport.findById(req.params.course_id, function(err, course) {
@@ -43,8 +63,9 @@ router.post('/ehb/:course_id', function(req, res) {
   EhbReport.findById(req.params.course_id, function(err, course) {
     if (err) throw err;
 
-    EhbReport.saveCourseData(course, data, function(err, response){
-      
+    EhbReport.updateCourse(course, data, function(err, response){
+      if (err) throw err;
+      res.sendStatus(200);
     });
   });
 });

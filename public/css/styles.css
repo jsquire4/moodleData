@@ -393,4 +393,56 @@ button:focus, input[type="button"]:focus {
 }
 
 
+/* EHB REPORT PAGE */
+
+.ehb-course-select-line {
+  padding-left: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  max-width: 750px;
+  width: 95%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ehb-course-select-link {
+  padding-left: 10px;
+  overflow-wrap: break-word;
+  display: inline-block;
+  width: 90%;
+  margin-bottom: 3px;
+  margin-top: 2px;
+  vertical-align: middle;
+  color: #194179 !important;
+}
+
+.fa-times:before {
+  color: red;
+  padding-right: 5px;
+}
+
+.fa-check:before {
+  color: green;
+  padding-right: 1px;
+}
+
+.ehb-incomplete {
+  background-color: #ffb3b3;
+}
+
+.ehb-complete {
+  background-color: #9dff80;
+}
+
+.excel-table-buttons {
+  display: flex;
+  justify-content: space-around;
+  width: 450px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 35px;
+}
+
+
+
 

@@ -482,50 +482,46 @@ function fillReport(fromDate, toDate, callback){
       coursesList = indexCoursesWithEnrolledStudents(data, studentsList, fromDate, toDate);
       coursesList = sumProfessions(coursesList);
       var timeStampNow = new Date();
-
-      EhbCourse.remove({timeStamp: {$ne: timeStampNow}}, function(err, results){
-        var i = 0;
-        async.eachSeries(coursesList, function(course, next) {
-            course = new EhbCourse ({
-              courseId: course.id,
-              courseName: course.name,
-              reportingPeriodFrom: fromDate,
-              reportingPeriodTo: toDate,
-              locationDataAvail: true,
-              numTrainedPrimaryCare: course.numTrainedPrimaryCare,
-              numTrainedMedUnderServed: course.numMedUnderServed,
-              numTrainedRural: course.numRuralArea,
-              numTrained: course.numTrainedByCourse,
-              profession1: course.sortedProfessions[0].profession,
-              numProf1: course.sortedProfessions[0].count,
-              profession2: course.sortedProfessions[1].profession,
-              numProf2: course.sortedProfessions[1].count,
-              profession3: course.sortedProfessions[2].profession,
-              numProf3: course.sortedProfessions[2].count,
-              profession4: course.sortedProfessions[3].profession,
-              numProf4: course.sortedProfessions[3].count,
-              profession5: course.sortedProfessions[4].profession,
-              numProf5: course.sortedProfessions[4].count,
-              profession6: course.sortedProfessions[5].profession,
-              numProf6: course.sortedProfessions[5].count,
-              numProfOther: course.sortedProfessions[6].count,
-              timeStamp: timeStampNow
-            });
-
-            course.position = i;
-            
-            course.save(function(err, results){
-              i++;
-              next();
-            });
-          }, function(err) {
-            if (err) throw err;
-            console.log("Saving Done!");
-        });
+      var i = 0;
+      async.eachSeries(coursesList, function(course, next) {
+          course = new EhbCourse ({
+            courseId: course.id,
+            courseName: course.name,
+            reportingPeriodFrom: fromDate,
+            reportingPeriodTo: toDate,
+            locationDataAvail: true,
+            numTrainedPrimaryCare: course.numTrainedPrimaryCare,
+            numTrainedMedUnderServed: course.numMedUnderServed,
+            numTrainedRural: course.numRuralArea,
+            numTrained: course.numTrainedByCourse,
+            profession1: course.sortedProfessions[0].profession,
+            numProf1: course.sortedProfessions[0].count,
+            profession2: course.sortedProfessions[1].profession,
+            numProf2: course.sortedProfessions[1].count,
+            profession3: course.sortedProfessions[2].profession,
+            numProf3: course.sortedProfessions[2].count,
+            profession4: course.sortedProfessions[3].profession,
+            numProf4: course.sortedProfessions[3].count,
+            profession5: course.sortedProfessions[4].profession,
+            numProf5: course.sortedProfessions[4].count,
+            profession6: course.sortedProfessions[5].profession,
+            numProf6: course.sortedProfessions[5].count,
+            numProfOther: course.sortedProfessions[6].count,
+            timeStamp: timeStampNow
+          });
+          
+          course.position = i;
+          course.save(function(err, results){
+            i++;
+            next();
+          });
+        }, function(err) {
         if (err) throw err;
-        callback (null, results);
+        EhbCourse.remove({timeStamp: {$ne: timeStampNow}}, function(err, results){
+          if (err) throw err;
+          callback(null, results);
+        });
       });
-
     });
   });
 }
@@ -623,5 +619,4 @@ module.exports.listCourses = function(callback){
   numProf6
   numProfOther
   courseDataCompleted
-
 */

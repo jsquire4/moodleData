@@ -23,35 +23,36 @@
         </div>
         <div class="modal-body modal-lg" id = "modal-{{this.id}}">
           <form id = "form-body-{{this.id}}" class = "prebuilt-moodle-reports" method = "post" action = "/reports/ehb/{{this.id}}">
+            <div class = "ehb-form-top-control">
+              <div class = "form-group ehb-text-input-block">
+                <label class = "ehb-text-label" for = "ehblps">Reporting LPS</label>
+                <input class = "ehb-text-field form-control" type = "text" name = "ehblps" id = "ehblps-{{this.id}}" placeholder = "ex. LPHI" required>
+              </div>
 
-            <div class = "form-group">
-              <label for = "ehblps">Reporting LPS</label>
-              <input class = "ehb-text-field form-control" type = "text" name = "ehblps" id = "ehblps-{{this.id}}" placeholder = "ex. LPHI" required>
-            </div>
+              <div class = "form-group ehb-text-input-block">
+                <label class = "ehb-text-label" for = "ehbcontactname">Contact Name</label>
+                <input class = "ehb-text-field form-control" type = "text" name = "ehbcontactname" id = "ehbcontactname-{{this.id}}">
+              </div>
 
-            <div class = "form-group">
-              <label for = "ehbdateoftraining">Date of Training</label>
-              <input class = "ehb-date-field form-control" type = "date" name = "ehbdateoftraining" id = "ehbdateoftraining-{{this.id}}">
-            </div>
+              <div class = "form-group ehb-text-input-block">
+                <label class = "ehb-text-label" for = "ehbdurhours">Course Duration Hours</label>
+                <input class = "ehb-text-field form-control" type = "text" name = "ehbdurhours" id = "ehbdurhours-{{this.id}}">
+              </div>
 
-            <div class = "form-group">
-              <label for = "ehbcontactname">Contact Name</label>
-              <input class = "ehb-text-field form-control" type = "text" name = "ehbcontactname" id = "ehbcontactname-{{this.id}}">
-            </div>
+              <div class = "form-group ehb-text-input-block">
+                <label class = "ehb-text-label" for = "ehbnumtimesoffered">Number of Times Training Was Offered</label>
+                <input class = "ehb-text-field form-control" type = "text" name = "ehbnumtimesoffered" id = "ehbnumtimesoffered-{{this.id}}">
+              </div>
 
-            <div class = "form-group">
-              <label for = "ehbappcontedu">Course Approved for Continuing Education</label>
-              <input class = "ehb-text-field form-control" type = "checkbox" name = "ehbappcontedu" id = "ehbappcontedu-{{this.id}}">
-            </div>
+              <div class = "form-group ehb-text-input-block">
+                <label class = "ehb-text-label" for = "ehbdateoftraining">Date of Training</label>
+                <input class = "ehb-date-field form-control" type = "date" name = "ehbdateoftraining" id = "ehbdateoftraining-{{this.id}}">
+              </div>
 
-            <div class = "form-group">
-              <label for = "ehbdurhours">Course Duration Hours</label>
-              <input class = "ehb-text-field form-control" type = "text" name = "ehbdurhours" id = "ehbdurhours-{{this.id}}">
-            </div>
-
-            <div class = "form-group">
-              <label for = "ehbnumtimesoffered">Number of Times Training Was Offered</label>
-              <input class = "ehb-text-field form-control" type = "text" name = "ehbnumtimesoffered" id = "ehbnumtimesoffered-{{this.id}}">
+              <div class = "form-group ehb-check-box-block">
+                <label class = "ehb-check-label" for = "ehbappcontedu">Course Approved for Continuing Education</label>
+                <input class = "ehb-check-box form-control" type = "checkbox" name = "ehbappcontedu" id = "ehbappcontedu-{{this.id}}">
+              </div>
             </div>
 
             <div class = "form-group">
@@ -383,7 +384,7 @@
 <hr>
 
 <div class = "excel-table-buttons">
-  <a class="btn btn-success btn-lg excel-table" href="#">Download to Excel</a>
+  <a class="btn btn-success btn-lg excel-table" href="/reports/generate-excel/ehb">Download to Excel</a>
   <a class="btn btn-primary btn-lg online-table" href="#">View Table Online</a>
 </div>
 <script type = "text/javascript">

@@ -1,8 +1,11 @@
-var express = require('express'); 
+var express = require("express"); 
 var router = express.Router();
-
 var Reporter = require("../models/reports");
 var EhbReport = require("../models/ehb");
+var xl = require("excel4node");
+var fs = require('fs');
+
+
 
 router.get('/index', ensureVerification, function(req, res){
   res.render('reportindex');
@@ -28,16 +31,13 @@ router.post('/report', ensureVerification, function(req, res){
 });
 
 /* 
-Coded myself into a corner with the form saving and date parsing....
-
-Sorry to whoever will inherit this.
-
-Also, keep in mind that this runs off of a free MLAB db, so we have to be conscious of the amount of data we store.
-
-Each new report deletes the old one, which isn't ideal, but also not a huge deal since you can just generate a new one with the old dates.
+  Coded myself into a corner with the form saving and date parsing....
+  Sorry to whoever will inherit this.
+  Also, keep in mind that this runs off of a free MLAB db, so we have to be conscious of the amount of data we store.
+  Each new report deletes the old one, which isn't ideal, but also not a huge deal since you can just generate a new one with the old dates.
 */
 
-router.get('/ehb', function(req, res){
+router.get('/ehb', ensureVerification, function(req, res){
   EhbReport.listCourses(function(err, courses){
     var fromDate = courses[0].reportingPeriodFrom;
     var toDate = courses[0].reportingPeriodTo;
@@ -48,7 +48,7 @@ router.get('/ehb', function(req, res){
   });
 });
 
-router.get('/ehb/:course_id', function(req, res) {
+router.get('/ehb/:course_id', ensureVerification, function(req, res) {
   EhbReport.findById(req.params.course_id, function(err, course) {
       if (err) {
         res.sendStatus(404);
@@ -58,7 +58,7 @@ router.get('/ehb/:course_id', function(req, res) {
   });
 });
 
-router.post('/ehb/:course_id', function(req, res) {
+router.post('/ehb/:course_id', ensureVerification, function(req, res) {
   var data = req.body;
   EhbReport.findById(req.params.course_id, function(err, course) {
     if (err) throw err;
@@ -70,6 +70,25 @@ router.post('/ehb/:course_id', function(req, res) {
   });
 });
 
+router.get('/generate-excel/ehb', ensureVerification, function(req, res) {
+  EhbReport.generateExcelFile(function(err, fileName){
+    
+    setTimeout(function(){ // I don't know how else to do this right now, but it makes me cringe too don't worry
+      if (fs.existsSync(fileName)) {
+        res.download(fileName);
+      } else {
+        setTimeout(function(){
+          if (fs.existsSync(fileName)) {
+            res.download(fileName);
+          } else {
+            res.sendStatus(500);
+          }
+        }, 5000);
+      }
+    }, 3000);
+  
+  });
+});
 
 function ensureVerification(req, res, next){
   if(req.isAuthenticated()){

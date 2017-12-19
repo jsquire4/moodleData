@@ -443,6 +443,45 @@ button:focus, input[type="button"]:focus {
   margin-bottom: 35px;
 }
 
+.ehb-text-field {
 
+}
 
+.ehb-text-label {
+
+}
+
+.ehb-check-box {
+  width: 20%;
+  align-self: center;
+}
+
+.ehb-check-label {
+  width: 75%;
+}
+
+.ehb-date-field {
+
+}
+
+.ehb-text-input-block {
+  width: 32%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.ehb-form-top-control {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.ehb-check-box-block {
+  width: 32%;
+  display: flex;
+  justify-content: center;
+  align-self: flex-end;
+}
 

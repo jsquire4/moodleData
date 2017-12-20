@@ -434,34 +434,6 @@ function indexCoursesWithEnrolledStudents(data, studentsList, fromDate, toDate){
   return coursesList;
 }
 
-function saveCourse(cCourse, fromDate, toDate, callback){
-  var course = new EhbCourse ({
-    courseId: cCourse.id,
-    courseName: cCourse.name,
-    reportingPeriodFrom: fromDate,
-    reportingPeriodTo: toDate,
-    locationDataAvail: true,
-    numTrainedPrimaryCare: cCourse.numTrainedPrimaryCare,
-    numTrainedMedUnderServed: cCourse.numMedUnderServed,
-    numTrainedRural: cCourse.numRuralArea,
-    numTrained: cCourse.numTrainedByCourse,
-    profession1: cCourse.sortedProfessions[0].profession,
-    numProf1: cCourse.sortedProfessions[0].count,
-    profession2: cCourse.sortedProfessions[1].profession,
-    numProf2: cCourse.sortedProfessions[1].count,
-    profession3: cCourse.sortedProfessions[2].profession,
-    numProf3: cCourse.sortedProfessions[2].count,
-    profession4: cCourse.sortedProfessions[3].profession,
-    numProf4: cCourse.sortedProfessions[3].count,
-    profession5: cCourse.sortedProfessions[4].profession,
-    numProf5: cCourse.sortedProfessions[4].count,
-    profession6: cCourse.sortedProfessions[5].profession,
-    numProf6: cCourse.sortedProfessions[5].count,
-    numProfOther: cCourse.sortedProfessions[6].count
-  });
-  course.save(callback);
-}
-
 function clearOldCourses(callback){
   EhbCourse.remove({}, function(err, removed){
     callback(err, removed);
@@ -485,6 +457,7 @@ function fillReport(fromDate, toDate, callback){
       var timeStampNow = new Date();
       var i = 0;
       async.eachSeries(coursesList, function(course, next) {
+          var sortedProfs = course.sortedProfessions;
           course = new EhbCourse ({
             courseId: course.id,
             courseName: course.name,
@@ -494,21 +467,27 @@ function fillReport(fromDate, toDate, callback){
             numTrainedPrimaryCare: course.numTrainedPrimaryCare,
             numTrainedMedUnderServed: course.numMedUnderServed,
             numTrainedRural: course.numRuralArea,
-            numTrained: course.numTrainedByCourse,
-            profession1: course.sortedProfessions[0].profession,
-            numProf1: course.sortedProfessions[0].count,
-            profession2: course.sortedProfessions[1].profession,
-            numProf2: course.sortedProfessions[1].count,
-            profession3: course.sortedProfessions[2].profession,
-            numProf3: course.sortedProfessions[2].count,
-            profession4: course.sortedProfessions[3].profession,
-            numProf4: course.sortedProfessions[3].count,
-            profession5: course.sortedProfessions[4].profession,
-            numProf5: course.sortedProfessions[4].count,
-            profession6: course.sortedProfessions[5].profession,
-            numProf6: course.sortedProfessions[5].count,
-            numProfOther: course.sortedProfessions[6].count,
-            timeStamp: timeStampNow
+            profession1: sortedProfs[0].profession,
+            numProf1: sortedProfs[0].count,
+            profession2: sortedProfs[1].profession,
+            numProf2: sortedProfs[1].count,
+            profession3: sortedProfs[2].profession,
+            numProf3: sortedProfs[2].count,
+            profession4: sortedProfs[3].profession,
+            numProf4: sortedProfs[3].count,
+            profession5: sortedProfs[4].profession,
+            numProf5: sortedProfs[4].count,
+            profession6: sortedProfs[5].profession,
+            numProf6: sortedProfs[5].count,
+            numProfOther: sortedProfs[6].count,
+            timeStamp: timeStampNow,
+            numTrained: (sortedProfs[0].count + 
+                 sortedProfs[1].count +
+                 sortedProfs[2].count +
+                 sortedProfs[3].count +
+                 sortedProfs[4].count +
+                 sortedProfs[5].count +
+                 sortedProfs[6].count)
           });
           
           course.position = i;
@@ -689,44 +668,3 @@ module.exports.generateExcelFile = function(callback){
     callback(null, fileName);
   });
 };
-
-/* Quick Schema for reference
-  
-  courseId
-  courseName
-  lps
-  reportingPeriodFrom
-  reportingPeriodTo
-  dateOfTraining
-  contactName
-  approvedContEd
-  durationHours
-  numTimesOffered
-  deliveryMode
-  partnerShips1
-  partnerShips2
-  partnerShips3
-  partnerShips4
-  locationDataAvail
-  numTrainedPrimaryCare
-  numTrainedMedUnderServed
-  numTrainedRural
-  coursePrimaryTopicArea
-  primaryCompetency
-  competencyTier
-  numTrained
-  profession1
-  numProf1
-  profession2
-  numProf2
-  profession3
-  numProf3
-  profession4
-  numProf4
-  profession5
-  numProf5
-  profession6
-  numProf6
-  numProfOther
-  courseDataCompleted
-*/

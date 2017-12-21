@@ -22,7 +22,7 @@
           </button>
         </div>
         <div class="modal-body modal-lg" id = "modal-{{this.id}}">
-          <form id = "form-body-{{this.id}}" class = "prebuilt-moodle-reports" method = "post" action = "/reports/cm/{{this.id}}">
+          <form id = "form-body-{{this.id}}" class = "prebuilt-moodle-reports" method = "post" action = "/reports/commonmetrics/{{this.id}}">
             <div class = "cm-form-top-control">
               <div class = "form-group cm-text-input-block">
                 <label class = "cm-text-label" for = "cmlps">Reporting LPS</label>
@@ -90,7 +90,7 @@
 <hr>
 
 <div class = "excel-table-buttons">
-  <a class="btn btn-success btn-lg excel-table" href="/reports/generate-excel/cm">Download to Excel</a>
+  <a class="btn btn-success btn-lg excel-table" href="/reports/generate-excel/commonmetrics">Download to Excel</a>
   <a class="btn btn-primary btn-lg online-table" href="#">View Table Online</a>
 </div>
 <script type = "text/javascript">
@@ -99,7 +99,7 @@
     var id = this.getAttribute("data-internalid");
     $.ajax({
       type: 'GET',
-      url: '/reports/cm/' + id,
+      url: '/reports/commonmetrics/' + id,
       success: function(data, status){
         if (data.courseDataCompleted) {
           $("#cmlps-" + id).val(data.lps);
@@ -107,25 +107,16 @@
           $("#cmdurhours-" + id).val(data.durationHours);
           $("#cmnumtimesoffered-" + id).val(data.numTimesOffered);
           $("#cmdeliverymode-" + id).val(data.deliveryMode);
-          $("#cmpartnership1-" + id).val(data.partnerships1);
-          $("#cmpartnership2-" + id).val(data.partnerships2);
-          $("#cmpartnership3-" + id).val(data.partnerships3);
-          $("#cmpartnership4-" + id).val(data.partnerships4);
-          $("#cmprimarytopicarea-" + id).val(data.coursePrimaryTopicArea);
-          $("#cmcompetencytier-" + id).val(data.competencyTier);
           $("#cmprimarycomp-" + id).val(data.primaryCompetency);
           var dateOfTraining = new Date(data.dateOfTraining).toISOString().substring(0, 10);
           $("#cmdateoftraining-" + id).val(dateOfTraining);
-          if (data.approvedContEd){
-            $("#cmappcontedu-" + id).prop('checked', true);
-          }
         } else {
           $("#form-body-" + id)[0].reset();
         }
       }
     });
-  });
-
+  });              
+              
   $(".course-save").click(function(e){
     e.preventDefault();
     var id = this.getAttribute("data-internalid");
@@ -137,7 +128,7 @@
       type: 'POST',
       data: JSON.stringify(data),
       contentType: 'application/json',
-      url: '/reports/cm/' + id,
+      url: '/reports/commonmetrics/' + id,
       success: function(){
         $("#formCheck-" + id).removeClass("fa-times");
         $("#formCheck-" + id).addClass("fa-check");
@@ -147,4 +138,4 @@
       }
     });
   });
-</script>
+</script> 

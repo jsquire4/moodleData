@@ -2,7 +2,7 @@ var mysql = require('mysql');
 require('datejs');
 require('dotenv').config();
 var util = require('util');
-
+ 
 var connection = mysql.createConnection({
   host: process.env.MYSQL_HOST,
   port: process.env.MYSQL_PORT,

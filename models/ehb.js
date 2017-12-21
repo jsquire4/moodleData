@@ -2,7 +2,7 @@ var mysql = require('mysql');
 var async = require('async');
 require('datejs');
 require('dotenv').config();
-var xl = require('excel4node')
+var xl = require('excel4node');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 

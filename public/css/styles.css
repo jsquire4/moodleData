@@ -393,9 +393,9 @@ button:focus, input[type="button"]:focus {
 }
 
 
-/* EHB REPORT PAGE */
+/* EHB AND COMMON METRICS REPORT PAGES */
 
-.ehb-course-select-line {
+.ehb-course-select-line, .cm-course-select-line {
   padding-left: 10px;
   border-radius: 5px;
   margin-bottom: 10px;
@@ -405,7 +405,7 @@ button:focus, input[type="button"]:focus {
   margin-right: auto;
 }
 
-.ehb-course-select-link {
+.ehb-course-select-link, .cm-course-select-link {
   padding-left: 10px;
   overflow-wrap: break-word;
   display: inline-block;
@@ -426,11 +426,11 @@ button:focus, input[type="button"]:focus {
   padding-right: 1px;
 }
 
-.ehb-incomplete {
+.ehb-incomplete, .cm-incomplete {
   background-color: #ffb3b3;
 }
 
-.ehb-complete {
+.ehb-complete, .cm-complete {
   background-color: #9dff80;
 }
 

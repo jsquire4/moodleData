@@ -18,20 +18,73 @@ connection.connect(function(err){
   if (err) throw err;
 });
 
-var questionRepsonseSchema = new Schema({
-  question: String,
-  numStrongDis: Number,
-  percentStrongDis: Number,
-  numDis: Number,
-  percentDis: Number,
-  numNeutral: Number,
-  percentNeutral: Number,
-  numAgree: Number,
-  percentAgree: Number,
-  numStrongAgree: Number,
-  percentStrongAgree: Number,
-  numTotal: Number
+var questionResponseSchema = new Schema({
+  question: {
+    type: String,
+  },
+
+  numStrongDis: {
+    type: Number,
+    default: 0
+  },
+
+  percentStrongDis: {
+    type: Number,
+    default: 0
+  },
+
+  numDis: {
+    type: Number,
+    default: 0
+  },
+
+  percentDis: {
+    type: Number,
+    default: 0
+  },
+
+  numNeutral: {
+    type: Number,
+    default: 0
+  },
+
+  percentNeutral: {
+    type: Number,
+    default: 0
+  },
+
+  numAgree: {
+    type: Number,
+    default: 0
+  },
+
+  percentAgree: {
+    type: Number,
+    default: 0
+  },
+
+  numStrongAgree: {
+    type: Number,
+    default: 0
+  },
+
+  percentStrongAgree: {
+    type: Number,
+    default: 0
+  },
+
+  numTotal: {
+    type: Number,
+    default: 0
+  },
+
+  itemPresent: {
+    type: Boolean,
+    default: false
+  }
 });
+
+var questionResponse = mongoose.model('questionResponse', questionResponseSchema);
 
 var cmCourseSchema = new Schema({
   courseId: {
@@ -94,6 +147,11 @@ var cmCourseSchema = new Schema({
     default: 0
   },
 
+  numResponses: {
+    type: Number,
+    default: 0
+  },
+
   courseDataCompleted: {
     type: Boolean,
     default: false
@@ -103,15 +161,15 @@ var cmCourseSchema = new Schema({
     type: Date
   },
 
-  subjectMatter: [questionRepsonseSchema],
+  subjectMatter: questionResponseSchema,
 
-  actionsToApply: [questionRepsonseSchema],
+  actionsToApply: questionResponseSchema,
 
-  clearlyPresented: [questionRepsonseSchema],
+  clearlyPresented: questionResponseSchema,
 
-  overallSatisfaction: [questionRepsonseSchema],
+  overallSatisfaction: questionResponseSchema,
 
-  learningObejectivesMet: [questionRepsonseSchema]
+  learningObejectivesMet: questionResponseSchema
 });
 
 var CmCourse = module.exports =  mongoose.model('CmCourse', cmCourseSchema);
@@ -127,9 +185,12 @@ function queryDB(query, callback){
   }); 
 }
 
-function getQuery(){
-  //
-  return "SELECT c.fullname AS 'courseName', fb.course AS 'courseId', fb.id AS 'courseFbSetId', fbc.id AS 'submissionId', FROM_UNIXTIME(fbc.timemodified, '%Y-%m-%d') AS 'dateTime', fbc.userid AS 'userId', fbi.id AS 'questionId', fbi.name AS 'question', fbi.presentation AS 'label', fbv.value AS 'response' FROM mdl_feedback as fb JOIN mdl_feedback_item AS fbi ON fb.id = fbi.feedback JOIN mdl_feedback_value AS fbv ON fbi.id = fbv.item JOIN mdl_feedback_completed AS fbc ON fbv.completed = fbc.id JOIN mdl_course AS c ON fb.course = c.id ORDER BY fb.id, CourseId;";
+function getQuery(queryType, courseid){
+  if (queryType == "feedbackData"){
+    return "SELECT c.fullname AS 'courseName', fb.course AS 'courseId', fb.id AS 'courseFbSetId', fbc.id AS 'submissionId', FROM_UNIXTIME(fbc.timemodified, '%Y-%m-%d') AS 'dateTime', fbc.userid AS 'userId', fbi.id AS 'questionId', fbi.name AS 'question', fbi.presentation AS 'label', fbv.value AS 'response' FROM mdl_feedback as fb JOIN mdl_feedback_item AS fbi ON fb.id = fbi.feedback JOIN mdl_feedback_value AS fbv ON fbi.id = fbv.item JOIN mdl_feedback_completed AS fbc ON fbv.completed = fbc.id JOIN mdl_course AS c ON fb.course = c.id ORDER BY fb.id, CourseId;";
+  } else if (queryType == "enrolleeData") {
+    return "SELECT ue.timestart, e.courseid FROM mdl_user_enrolments AS ue JOIN mdl_enrol AS e ON ue.enrolid = e.id JOIN mdl_course AS c ON e.courseid = c.id WHERE courseid = " + courseid + ";";
+  }
 }
 
 function filterResults(fromDate, toDate, results){
@@ -162,7 +223,7 @@ function feedbackAnalysis(data){
     this.id = questionId;
     this.question = question;
     this.qType = '';
-    this.responses;
+    this.responses = '';
     this.numResponses = 0;
     this.avgResponse = 0;
   }
@@ -348,7 +409,7 @@ function getAverageFbTF(question){
   return {positive: percentTrue, negative: percentFalse};
 }
 
-function parseCourseObject(course, curCourse, fromDate, toDate, timeStampNow){
+function parseCourseObject(course, curCourse, fromDate, toDate, timeStampNow, callback){
 
   var comMetQs = {
     q1: "*ubject*atter*",
@@ -363,13 +424,20 @@ function parseCourseObject(course, curCourse, fromDate, toDate, timeStampNow){
   course.reportingPeriodFrom = fromDate;
   course.reportingPeriodTo = toDate;
   course.timeStamp = timeStampNow;
-
-  for (var j = 0; j < curCourse.fbQs.length; j++){
+  course.numResponses = curCourse.numResponses;
+  course.subjectMatter = new questionResponse();
+  course.actionsToApply = new questionResponse();
+  course.clearlyPresented = new questionResponse();
+  course.overallSatisfaction = new questionResponse();
+  course.learningObejectivesMet = new questionResponse();
+  
+  for (var j = 0; j < curCourse.fbQs.length; j++) {
     var fbQ = curCourse.fbQs[j];
      
-     if (regexMatch(fbQ.question, comMetQs.q1)){
+    if (regexMatch(fbQ.question, comMetQs.q1)){
       
       course.subjectMatter = [{
+        itemPresent: true,
         question: fbQ.question,
         numStrongDis: fbQ.responses.stronglyDisagree,
         percentStrongDis: Number(Math.round((fbQ.responses.stronglyDisagree / fbQ.numResponses)+'e2')+'e-2'),
@@ -387,6 +455,7 @@ function parseCourseObject(course, curCourse, fromDate, toDate, timeStampNow){
      } else if (regexMatch(fbQ.question, comMetQs.q2)){
       
       course.actionsToApply = [{
+        itemPresent: true,
         question: fbQ.question,
         numStrongDis: fbQ.responses.stronglyDisagree,
         percentStrongDis: Number(Math.round((fbQ.responses.stronglyDisagree / fbQ.numResponses)+'e2')+'e-2'),
@@ -404,6 +473,7 @@ function parseCourseObject(course, curCourse, fromDate, toDate, timeStampNow){
      } else if (regexMatch(fbQ.question, comMetQs.q3)){
       
       course.clearlyPresented = [{
+        itemPresent: true,
         question: fbQ.question,
         numStrongDis: fbQ.responses.stronglyDisagree,
         percentStrongDis: Number(Math.round((fbQ.responses.stronglyDisagree / fbQ.numResponses)+'e2')+'e-2'),
@@ -421,6 +491,7 @@ function parseCourseObject(course, curCourse, fromDate, toDate, timeStampNow){
      } else if (regexMatch(fbQ.question, comMetQs.q4)){
       
       course.overallSatisfaction = [{
+        itemPresent: true,
         question: fbQ.question,
         numStrongDis: fbQ.responses.stronglyDisagree,
         percentStrongDis: Number(Math.round((fbQ.responses.stronglyDisagree / fbQ.numResponses)+'e2')+'e-2'),
@@ -438,6 +509,7 @@ function parseCourseObject(course, curCourse, fromDate, toDate, timeStampNow){
      } else if (regexMatch(fbQ.question, comMetQs.q5)){
       
       course.learningObejectivesMet = [{
+        itemPresent: true,
         question: fbQ.question,
         numStrongDis: fbQ.responses.stronglyDisagree,
         percentStrongDis: Number(Math.round((fbQ.responses.stronglyDisagree / fbQ.numResponses)+'e2')+'e-2'),
@@ -452,14 +524,105 @@ function parseCourseObject(course, curCourse, fromDate, toDate, timeStampNow){
         numTotal: fbQ.numResponses
       }];
 
-     }
+    }
+  }
+
+  var query = getQuery("enrolleeData", course.courseId);
+  if (query){
+    queryDB(query, function(err, results){
+
+      for (var m = 0; m < results.length; m++){
+        var enrollDate = new Date(results.timestart);
+        if (enrollDate >= (new Date(fromDate)) ){
+          course.numTrained += 1;
+        }
+      }
+      callback(null, course);
+    });
+
+  } else {
+    course.numTrained = 0;
+    callback(null, course);
+  }
+}
+
+function validateData(course){ // Some questions are not present in the database
+
+  if (course.subjectMatter.itemPresent == false) {
+    course.subjectMatter.numStrongDis = -1;
+    course.subjectMatter.percentStrongDis = -1;
+    course.subjectMatter.numDis = -1;
+    course.subjectMatter.percentDis = -1;
+    course.subjectMatter.numNeutral = -1;
+    course.subjectMatter.percentNeutral = -1;
+    course.subjectMatter.numAgree = -1;
+    course.subjectMatter.percentAgree = -1;
+    course.subjectMatter.numStrongAgree = -1;
+    course.subjectMatter.percentStrongAgree = -1;
+    course.subjectMatter.numTotal = -1;
+  }
+
+  if (course.actionsToApply.itemPresent == false) {
+    course.actionsToApply.numStrongDis = -1;
+    course.actionsToApply.percentStrongDis = -1;
+    course.actionsToApply.numDis = -1;
+    course.actionsToApply.percentDis = -1;
+    course.actionsToApply.numNeutral = -1;
+    course.actionsToApply.percentNeutral = -1;
+    course.actionsToApply.numAgree = -1;
+    course.actionsToApply.percentAgree = -1;
+    course.actionsToApply.numStrongAgree = -1;
+    course.actionsToApply.percentStrongAgree = -1;
+    course.actionsToApply.numTotal = -1;
+  }
+
+  if (course.overallSatisfaction.itemPresent == false) {
+    course.overallSatisfaction.numStrongDis = -1;
+    course.overallSatisfaction.percentStrongDis = -1;
+    course.overallSatisfaction.numDis = -1;
+    course.overallSatisfaction.percentDis = -1;
+    course.overallSatisfaction.numNeutral = -1;
+    course.overallSatisfaction.percentNeutral = -1;
+    course.overallSatisfaction.numAgree = -1;
+    course.overallSatisfaction.percentAgree = -1;
+    course.overallSatisfaction.numStrongAgree = -1;
+    course.overallSatisfaction.percentStrongAgree = -1;
+    course.overallSatisfaction.numTotal = -1;
+  }
+
+  if (course.clearlyPresented.itemPresent == false) {
+    course.clearlyPresented.numStrongDis = -1;
+    course.clearlyPresented.percentStrongDis = -1;
+    course.clearlyPresented.numDis = -1;
+    course.clearlyPresented.percentDis = -1;
+    course.clearlyPresented.numNeutral = -1;
+    course.clearlyPresented.percentNeutral = -1;
+    course.clearlyPresented.numAgree = -1;
+    course.clearlyPresented.percentAgree = -1;
+    course.clearlyPresented.numStrongAgree = -1;
+    course.clearlyPresented.percentStrongAgree = -1;
+    course.clearlyPresented.numTotal = -1;
+  }
+
+  if (course.learningObejectivesMet.itemPresent == false) {
+    course.learningObejectivesMet.numStrongDis = -1;
+    course.learningObejectivesMet.percentStrongDis = -1;
+    course.learningObejectivesMet.numDis = -1;
+    course.learningObejectivesMet.percentDis = -1;
+    course.learningObejectivesMet.numNeutral = -1;
+    course.learningObejectivesMet.percentNeutral = -1;
+    course.learningObejectivesMet.numAgree = -1;
+    course.learningObejectivesMet.percentAgree = -1;
+    course.learningObejectivesMet.numStrongAgree = -1;
+    course.learningObejectivesMet.percentStrongAgree = -1;
+    course.learningObejectivesMet.numTotal = -1;
   }
 
   return course;
 }
 
 module.exports.createCourses = function(fromDate, toDate, callback){
-    var query = getQuery();
+    var query = getQuery("feedbackData");
     var results;
     
     if (query) { 
@@ -474,15 +637,15 @@ module.exports.createCourses = function(fromDate, toDate, callback){
           
           var i = 0;
           async.eachSeries(results, function(course, next) {
-              
-              course = new CmCourse();
-              course = parseCourseObject(course, results[i], fromDate, toDate, timeStampNow);
+            course = new CmCourse();
+            parseCourseObject(course, results[i], fromDate, toDate, timeStampNow, function(err, data){
+              course = data;
               course.position = i;
               course.save(function(err, results){
                 i++;
                 next();
               });
-            
+            });
           }, function(err) {
             if (err) throw err;
             CmCourse.remove({timeStamp: {$ne: timeStampNow}}, function(err, results){
@@ -665,9 +828,9 @@ module.exports.generateExcelFile = function(callback){
     var row = 3;
     
     for (var i = 0; i < courses.length; i++){
-      debugger;
       var c = courses[i];
-      
+      course = validateData(course);
+
       ws.cell(row, 1).string(c.lps).style(styleNoColorData);
       ws.cell(row, 2).date(new Date(c.reportingPeriodFrom)).style(styleNoColorData);
       ws.cell(row, 3).string(c.contactName).style(styleNoColorData);
@@ -677,62 +840,62 @@ module.exports.generateExcelFile = function(callback){
       ws.cell(row, 7).string(c.deliveryMode).style(styleNoColorData);
       ws.cell(row, 8).number(c.durationHours);
       ws.cell(row, 9).number(c.numTrained);
-      ws.cell(row, 10).number(c.numTrained);
+      ws.cell(row, 10).number(c.numResponses);
 
-      ws.cell(row, 11).number(c.subjectMatter[0].numStrongDis);
-      ws.cell(row, 12).number(c.subjectMatter[0].percentStrongDis);
-      ws.cell(row, 13).number(c.subjectMatter[0].numDis);
-      ws.cell(row, 14).number(c.subjectMatter[0].percentDis);
-      ws.cell(row, 15).number(c.subjectMatter[0].numNeutral);
-      ws.cell(row, 16).number(c.subjectMatter[0].percentNeutral);
-      ws.cell(row, 17).number(c.subjectMatter[0].numAgree);
-      ws.cell(row, 18).number(c.subjectMatter[0].percentAgree);
-      ws.cell(row, 19).number(c.subjectMatter[0].numStrongAgree);
-      ws.cell(row, 20).number(c.subjectMatter[0].percentStrongAgree);
+      ws.cell(row, 11).number(c.subjectMatter.numStrongDis);
+      ws.cell(row, 12).number(c.subjectMatter.percentStrongDis);
+      ws.cell(row, 13).number(c.subjectMatter.numDis);
+      ws.cell(row, 14).number(c.subjectMatter.percentDis);
+      ws.cell(row, 15).number(c.subjectMatter.numNeutral);
+      ws.cell(row, 16).number(c.subjectMatter.percentNeutral);
+      ws.cell(row, 17).number(c.subjectMatter.numAgree);
+      ws.cell(row, 18).number(c.subjectMatter.percentAgree);
+      ws.cell(row, 19).number(c.subjectMatter.numStrongAgree);
+      ws.cell(row, 20).number(c.subjectMatter.percentStrongAgree);
 
-      ws.cell(row, 21).number(c.actionsToApply[0].numStrongDis);
-      ws.cell(row, 22).number(c.actionsToApply[0].percentStrongDis);
-      ws.cell(row, 23).number(c.actionsToApply[0].numDis);
-      ws.cell(row, 24).number(c.actionsToApply[0].percentDis);
-      ws.cell(row, 25).number(c.actionsToApply[0].numNeutral);
-      ws.cell(row, 26).number(c.actionsToApply[0].percentNeutral);
-      ws.cell(row, 27).number(c.actionsToApply[0].numAgree);
-      ws.cell(row, 28).number(c.actionsToApply[0].percentAgree);
-      ws.cell(row, 29).number(c.actionsToApply[0].numStrongAgree);
-      ws.cell(row, 30).number(c.actionsToApply[0].percentStrongAgree);
+      ws.cell(row, 21).number(c.actionsToApply.numStrongDis);
+      ws.cell(row, 22).number(c.actionsToApply.percentStrongDis);
+      ws.cell(row, 23).number(c.actionsToApply.numDis);
+      ws.cell(row, 24).number(c.actionsToApply.percentDis);
+      ws.cell(row, 25).number(c.actionsToApply.numNeutral);
+      ws.cell(row, 26).number(c.actionsToApply.percentNeutral);
+      ws.cell(row, 27).number(c.actionsToApply.numAgree);
+      ws.cell(row, 28).number(c.actionsToApply.percentAgree);
+      ws.cell(row, 29).number(c.actionsToApply.numStrongAgree);
+      ws.cell(row, 30).number(c.actionsToApply.percentStrongAgree);
 
-      ws.cell(row, 31).number(c.clearlyPresented[0].numStrongDis);
-      ws.cell(row, 32).number(c.clearlyPresented[0].percentStrongDis);
-      ws.cell(row, 33).number(c.clearlyPresented[0].numDis);
-      ws.cell(row, 34).number(c.clearlyPresented[0].percentDis);
-      ws.cell(row, 35).number(c.clearlyPresented[0].numNeutral);
-      ws.cell(row, 36).number(c.clearlyPresented[0].percentNeutral);
-      ws.cell(row, 37).number(c.clearlyPresented[0].numAgree);
-      ws.cell(row, 38).number(c.clearlyPresented[0].percentAgree);
-      ws.cell(row, 39).number(c.clearlyPresented[0].numStrongAgree);
-      ws.cell(row, 40).number(c.clearlyPresented[0].percentStrongAgree);
+      ws.cell(row, 31).number(c.clearlyPresented.numStrongDis);
+      ws.cell(row, 32).number(c.clearlyPresented.percentStrongDis);
+      ws.cell(row, 33).number(c.clearlyPresented.numDis);
+      ws.cell(row, 34).number(c.clearlyPresented.percentDis);
+      ws.cell(row, 35).number(c.clearlyPresented.numNeutral);
+      ws.cell(row, 36).number(c.clearlyPresented.percentNeutral);
+      ws.cell(row, 37).number(c.clearlyPresented.numAgree);
+      ws.cell(row, 38).number(c.clearlyPresented.percentAgree);
+      ws.cell(row, 39).number(c.clearlyPresented.numStrongAgree);
+      ws.cell(row, 40).number(c.clearlyPresented.percentStrongAgree);
 
-      ws.cell(row, 41).number(c.overallSatisfaction[0].numStrongDis);
-      ws.cell(row, 42).number(c.overallSatisfaction[0].percentStrongDis);
-      ws.cell(row, 43).number(c.overallSatisfaction[0].numDis);
-      ws.cell(row, 44).number(c.overallSatisfaction[0].percentDis);
-      ws.cell(row, 45).number(c.overallSatisfaction[0].numNeutral);
-      ws.cell(row, 46).number(c.overallSatisfaction[0].percentNeutral);
-      ws.cell(row, 47).number(c.overallSatisfaction[0].numAgree);
-      ws.cell(row, 48).number(c.overallSatisfaction[0].percentAgree);
-      ws.cell(row, 49).number(c.overallSatisfaction[0].numStrongAgree);
-      ws.cell(row, 50).number(c.overallSatisfaction[0].percentStrongAgree);
+      ws.cell(row, 41).number(c.overallSatisfaction.numStrongDis);
+      ws.cell(row, 42).number(c.overallSatisfaction.percentStrongDis);
+      ws.cell(row, 43).number(c.overallSatisfaction.numDis);
+      ws.cell(row, 44).number(c.overallSatisfaction.percentDis);
+      ws.cell(row, 45).number(c.overallSatisfaction.numNeutral);
+      ws.cell(row, 46).number(c.overallSatisfaction.percentNeutral);
+      ws.cell(row, 47).number(c.overallSatisfaction.numAgree);
+      ws.cell(row, 48).number(c.overallSatisfaction.percentAgree);
+      ws.cell(row, 49).number(c.overallSatisfaction.numStrongAgree);
+      ws.cell(row, 50).number(c.overallSatisfaction.percentStrongAgree);
 
-      ws.cell(row, 51).number(c.learningObejectivesMet[0].numStrongDis);
-      ws.cell(row, 52).number(c.learningObejectivesMet[0].percentStrongDis);
-      ws.cell(row, 53).number(c.learningObejectivesMet[0].numDis);
-      ws.cell(row, 54).number(c.learningObejectivesMet[0].percentDis);
-      ws.cell(row, 55).number(c.learningObejectivesMet[0].numNeutral);
-      ws.cell(row, 56).number(c.learningObejectivesMet[0].percentNeutral);
-      ws.cell(row, 57).number(c.learningObejectivesMet[0].numAgree);
-      ws.cell(row, 58).number(c.learningObejectivesMet[0].percentAgree);
-      ws.cell(row, 59).number(c.learningObejectivesMet[0].numStrongAgree);
-      ws.cell(row, 60).number(c.learningObejectivesMet[0].percentStrongAgree);
+      ws.cell(row, 51).number(c.learningObejectivesMet.numStrongDis);
+      ws.cell(row, 52).number(c.learningObejectivesMet.percentStrongDis);
+      ws.cell(row, 53).number(c.learningObejectivesMet.numDis);
+      ws.cell(row, 54).number(c.learningObejectivesMet.percentDis);
+      ws.cell(row, 55).number(c.learningObejectivesMet.numNeutral);
+      ws.cell(row, 56).number(c.learningObejectivesMet.percentNeutral);
+      ws.cell(row, 57).number(c.learningObejectivesMet.numAgree);
+      ws.cell(row, 58).number(c.learningObejectivesMet.percentAgree);
+      ws.cell(row, 59).number(c.learningObejectivesMet.numStrongAgree);
+      ws.cell(row, 60).number(c.learningObejectivesMet.percentStrongAgree);
 
       ws.cell(row, 61).bool(true).style(styleNoColorData);
 

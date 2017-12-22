@@ -126,7 +126,6 @@ router.get('/generate-excel/commonmetrics', ensureVerification, function(req, re
   });
 });
 
-
 router.post('/ehb/:course_id', ensureVerification, function(req, res) {
   var data = req.body;
   EhbReport.findById(req.params.course_id, function(err, course) {
@@ -150,7 +149,6 @@ router.post('/commonmetrics/:course_id', ensureVerification, function(req, res) 
     });
   });
 });
-
 
 function ensureVerification(req, res, next){
   if(req.isAuthenticated()){

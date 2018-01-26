@@ -436,104 +436,50 @@ function parseCourseObject(course, curCourse, fromDate, toDate, timeStampNow, ca
     if (regexMatch(fbQ.question, comMetQs.q1)){
       var q = course.subjectMatter; // q as in question
       
-        q.itemPresent = true;
-        q.question = fbQ.question;
-        q.numStrongDis = fbQ.responses.stronglyDisagree;
-        q.percentStrongDis = Number(Math.round((fbQ.responses.stronglyDisagree / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numDis = fbQ.responses.disagree;
-        q.percentDis = Number(Math.round((fbQ.responses.disagree / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numNeutral = fbQ.responses.neutral;
-        q.percentNeutral = Number(Math.round((fbQ.responses.neutral / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numAgree = fbQ.responses.agree;
-        q.percentAgree = Number(Math.round((fbQ.responses.agree / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numStrongAgree = fbQ.responses.stronglyAgree;
-        q.percentStrongAgree = Number(Math.round((fbQ.responses.stronglyAgree / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numTotal = fbQ.numResponses;
-    
-     
      } else if (regexMatch(fbQ.question, comMetQs.q2)){
       var q = course.actionsToApply;
-
-        q.itemPresent = true;
-        q.question = fbQ.question;
-        q.numStrongDis = fbQ.responses.stronglyDisagree;
-        q.percentStrongDis = Number(Math.round((fbQ.responses.stronglyDisagree / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numDis = fbQ.responses.disagree;
-        q.percentDis = Number(Math.round((fbQ.responses.disagree / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numNeutral = fbQ.responses.neutral;
-        q.percentNeutral = Number(Math.round((fbQ.responses.neutral / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numAgree = fbQ.responses.agree;
-        q.percentAgree = Number(Math.round((fbQ.responses.agree / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numStrongAgree = fbQ.responses.stronglyAgree;
-        q.percentStrongAgree = Number(Math.round((fbQ.responses.stronglyAgree / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numTotal = fbQ.numResponses;
 
      } else if (regexMatch(fbQ.question, comMetQs.q3)){
       var q = course.clearlyPresented;
 
-        q.itemPresent = true;
-        q.question = fbQ.question;
-        q.numStrongDis = fbQ.responses.stronglyDisagree;
-        q.percentStrongDis = Number(Math.round((fbQ.responses.stronglyDisagree / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numDis = fbQ.responses.disagree;
-        q.percentDis = Number(Math.round((fbQ.responses.disagree / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numNeutral = fbQ.responses.neutral;
-        q.percentNeutral = Number(Math.round((fbQ.responses.neutral / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numAgree = fbQ.responses.agree;
-        q.percentAgree = Number(Math.round((fbQ.responses.agree / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numStrongAgree = fbQ.responses.stronglyAgree;
-        q.percentStrongAgree = Number(Math.round((fbQ.responses.stronglyAgree / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numTotal = fbQ.numResponses;
-
      } else if (regexMatch(fbQ.question, comMetQs.q4)){
       var q = course.overallSatisfaction;
 
-        q.itemPresent = true;
-        q.question = fbQ.question;
-        q.numStrongDis = fbQ.responses.stronglyDisagree;
-        q.percentStrongDis = Number(Math.round((fbQ.responses.stronglyDisagree / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numDis = fbQ.responses.disagree;
-        q.percentDis = Number(Math.round((fbQ.responses.disagree / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numNeutral = fbQ.responses.neutral;
-        q.percentNeutral = Number(Math.round((fbQ.responses.neutral / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numAgree = fbQ.responses.agree;
-        q.percentAgree = Number(Math.round((fbQ.responses.agree / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numStrongAgree = fbQ.responses.stronglyAgree;
-        q.percentStrongAgree = Number(Math.round((fbQ.responses.stronglyAgree / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numTotal = fbQ.numResponses;
-
      } else if (regexMatch(fbQ.question, comMetQs.q5)){
       var q = course.learningObejectivesMet;
-
-        q.itemPresent = true;
-        q.question = fbQ.question;
-        q.numStrongDis = fbQ.responses.stronglyDisagree;
-        q.percentStrongDis = Number(Math.round((fbQ.responses.stronglyDisagree / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numDis = fbQ.responses.disagree;
-        q.percentDis = Number(Math.round((fbQ.responses.disagree / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numNeutral = fbQ.responses.neutral;
-        q.percentNeutral = Number(Math.round((fbQ.responses.neutral / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numAgree = fbQ.responses.agree;
-        q.percentAgree = Number(Math.round((fbQ.responses.agree / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numStrongAgree = fbQ.responses.stronglyAgree;
-        q.percentStrongAgree = Number(Math.round((fbQ.responses.stronglyAgree / fbQ.numResponses)+'e2')+'e-2') * 100;
-        q.numTotal = fbQ.numResponses;
     }
+
+    q.itemPresent = true;
+    q.question = fbQ.question;
+    q.numStrongDis = fbQ.responses.stronglyDisagree;
+    q.percentStrongDis = (Number(Math.round((fbQ.responses.stronglyDisagree / fbQ.numResponses)+'e2')+'e-2') * 100).toFixed(2);
+    q.numDis = fbQ.responses.disagree;
+    q.percentDis = (Number(Math.round((fbQ.responses.disagree / fbQ.numResponses)+'e2')+'e-2') * 100).toFixed(2);
+    q.numNeutral = fbQ.responses.neutral;
+    q.percentNeutral = (Number(Math.round((fbQ.responses.neutral / fbQ.numResponses)+'e2')+'e-2') * 100).toFixed(2);
+    q.numAgree = fbQ.responses.agree;
+    q.percentAgree = (Number(Math.round((fbQ.responses.agree / fbQ.numResponses)+'e2')+'e-2') * 100).toFixed(2);
+    q.numStrongAgree = fbQ.responses.stronglyAgree;
+    q.percentStrongAgree = (Number(Math.round((fbQ.responses.stronglyAgree / fbQ.numResponses)+'e2')+'e-2') * 100).toFixed(2);
+    q.numTotal = fbQ.numResponses;
   }
 
-  // Supposedly the total number of responses on one of the question objects should be equal to the other four, so...
+  // Supposedly, the total number of responses on one of the question objects should be equal to the other four, so...
   course.numResponses = course.subjectMatter.numTotal;
 
   var query = getQuery("enrolleeData", course.courseId);
+
   if (query){
     queryDB(query, function(err, results){
 
+      course.numTrained = 0;
       for (var m = 0; m < results.length; m++){
-        var enrollDate = new Date(results.timestart);
-        if (enrollDate >= (new Date(fromDate)) ){
+        var enrollDate = new Date(results[m].timestart * 1000); // for some reason this date is in seconds and not milliseconds, thanks moodle
+        if (enrollDate >= new Date(fromDate) && enrollDate <= new Date(toDate)){
           course.numTrained += 1;
         }
       }
+      
       callback(null, course);
     });
 
@@ -543,7 +489,7 @@ function parseCourseObject(course, curCourse, fromDate, toDate, timeStampNow, ca
   }
 }
 
-function validateData(course){ // Some questions are not present in the database
+function validateData(course){ // If some questions are not present in the database
 
   if (course.subjectMatter.itemPresent == false) {
     course.subjectMatter.numStrongDis = -1;

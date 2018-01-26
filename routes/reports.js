@@ -7,6 +7,8 @@ var xl = require("excel4node");
 var fs = require('fs');
 
 
+
+// REPORTS HOME AND INITIAL VIEW
 router.get('/index', ensureVerification, function(req, res){
   res.render('reportindex');
 });
@@ -44,6 +46,7 @@ router.post('/report', ensureVerification, function(req, res){
   Each new report deletes the old one, which isn't ideal, but also not a huge deal since you can just generate a new one with the old dates.
 */
 
+// EHB REPORT
 router.get('/ehb', ensureVerification, function(req, res){
   EhbReport.listCourses(function(err, courses){
     var fromDate = courses[0].reportingPeriodFrom;
@@ -62,6 +65,75 @@ router.get('/ehb/:course_id', ensureVerification, function(req, res) {
         console.log(err);
       }
       res.send(course);
+  });
+});
+
+router.post('/ehb/:course_id', ensureVerification, function(req, res) {
+  var data = req.body;
+  EhbReport.findById(req.params.course_id, function(err, course) {
+    if (err) throw err;
+
+    EhbReport.updateCourse(course, data, function(err, response){
+      if (err) throw err;
+      res.sendStatus(200);
+    });
+  });
+});
+
+
+// COMMMON METRICS REPORT
+router.get('/commonmetrics', ensureVerification, function(req, res){
+  CmReport.listCourses(function(err, courses){
+    var fromDate = courses[0].reportingPeriodFrom;
+    var toDate = courses[0].reportingPeriodTo;
+    fromDate = fromDate.format("M dS Y");
+    toDate = toDate.format("M dS Y");
+    if (err) throw err;
+    res.render('commonMetrics', {courses: courses, fromDate: fromDate, toDate: toDate, returningToSaved: true}); 
+  });
+});
+
+router.get('/commonmetrics/:course_id', ensureVerification, function(req, res) {
+  CmReport.findById(req.params.course_id, function(err, course) {
+      if (err) {
+        res.sendStatus(404);
+        console.log(err);
+      }
+      res.send(course);
+  });
+});
+
+router.post('/commonmetrics/:course_id', ensureVerification, function(req, res) {
+  var data = req.body;
+  CmReport.findById(req.params.course_id, function(err, course) {
+    if (err) throw err;
+
+    CmReport.updateCourse(course, data, function(err, response){
+      if (err) throw err;
+      res.sendStatus(200);
+    });
+  });
+});
+
+
+// EXCEL GENERATORS
+router.get('/generate-excel/commonmetrics', ensureVerification, function(req, res) {
+  CmReport.generateExcelFile(function(err, fileName){
+    
+    setTimeout(function(){ // I don't know how else to do this right now, but it makes me cringe too don't worry
+      if (fs.existsSync(fileName)) {
+        res.download(fileName);
+      } else {
+        setTimeout(function(){
+          if (fs.existsSync(fileName)) {
+            res.download(fileName);
+          } else {
+            res.sendStatus(500);
+          }
+        }, 5000);
+      }
+    }, 3000);
+  
   });
 });
 
@@ -85,70 +157,20 @@ router.get('/generate-excel/ehb', ensureVerification, function(req, res) {
   });
 });
 
-router.get('/commonmetrics', ensureVerification, function(req, res){
-  CmReport.listCourses(function(err, courses){
-    var fromDate = courses[0].reportingPeriodFrom;
-    var toDate = courses[0].reportingPeriodTo;
-    fromDate = fromDate.format("M dS Y");
-    toDate = toDate.format("M dS Y");
-    if (err) throw err;
-    res.render('commonMetrics', {courses: courses, fromDate: fromDate, toDate: toDate, returningToSaved: true}); 
+
+// TABLE GENERATORS
+router.get('/generate-table/ehb', ensureVerification, function(req, res) {
+  EhbReport.getCourses(function(err, data){
+    res.render('ehbTable', {data: data});
   });
 });
 
-router.get('/commonmetrics/:course_id', ensureVerification, function(req, res) {
-  CmReport.findById(req.params.course_id, function(err, course) {
-      if (err) {
-        res.sendStatus(404);
-        console.log(err);
-      }
-      res.send(course);
+router.get('/generate-table/commonmetrics', ensureVerification, function(req, res) {
+  CmReport.getCourses(function(err, data){
+    res.render('commonMetricsTable', {data: data});
   });
 });
 
-router.get('/generate-excel/commonmetrics', ensureVerification, function(req, res) {
-  CmReport.generateExcelFile(function(err, fileName){
-    
-    setTimeout(function(){ // I don't know how else to do this right now, but it makes me cringe too don't worry
-      if (fs.existsSync(fileName)) {
-        res.download(fileName);
-      } else {
-        setTimeout(function(){
-          if (fs.existsSync(fileName)) {
-            res.download(fileName);
-          } else {
-            res.sendStatus(500);
-          }
-        }, 5000);
-      }
-    }, 3000);
-  
-  });
-});
-
-router.post('/ehb/:course_id', ensureVerification, function(req, res) {
-  var data = req.body;
-  EhbReport.findById(req.params.course_id, function(err, course) {
-    if (err) throw err;
-
-    EhbReport.updateCourse(course, data, function(err, response){
-      if (err) throw err;
-      res.sendStatus(200);
-    });
-  });
-});
-
-router.post('/commonmetrics/:course_id', ensureVerification, function(req, res) {
-  var data = req.body;
-  CmReport.findById(req.params.course_id, function(err, course) {
-    if (err) throw err;
-
-    CmReport.updateCourse(course, data, function(err, response){
-      if (err) throw err;
-      res.sendStatus(200);
-    });
-  });
-});
 
 function ensureVerification(req, res, next){
   if(req.isAuthenticated()){

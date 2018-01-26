@@ -485,3 +485,18 @@ button:focus, input[type="button"]:focus {
   align-self: flex-end;
 }
 
+// TABLES
+
+#common-metrics-table, #ehb-table {
+  overflow-x: scroll;
+  max-width: 95%;
+}
+
+.table-block {
+  overflow-x: scroll;
+  margin-bottom: 50px;
+}
+
+.button-table-block {
+  margin-bottom: 15px;
+}

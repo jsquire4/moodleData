@@ -27,13 +27,18 @@
     "express-validator": "^4.1.1",
     "handlebars-helpers": "^0.9.8",
     "handlebars-intl": "^1.1.2",
+    "hogan.js": "^3.0.2",
+    "mongo-sanitize": "^1.0.0",
     "mongo-xlsx": "^1.0.12",
     "mongodb": "^2.2.31",
     "mongoose": "^4.11.11",
     "mysql": "^2.14.1",
+    "nodemailer": "^4.6.2",
     "nodemon": "^1.12.1",
     "passport": "^0.4.0",
     "passport-http": "^0.3.0",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "sendgrid": "^5.2.3",
+    "url": "^0.11.0"
   }
 }

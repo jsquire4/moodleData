@@ -25,6 +25,7 @@
   var users = require('./routes/users');
   var reports = require('./routes/reports');
   var support = require('./routes/support');
+  var mailer = require('./routes/mailer');
   
 // HANDLEBARS ENGINE SETUP
   var handlebars = require('express-handlebars').create({defaultLayout: 'main'});
@@ -41,6 +42,7 @@
 // DATABASE CONNECTION FOR LOGIN
   mongoose.connect('mongodb://' + process.env.MLAB_USER + ':' + process.env.MLAB_PASS + process.env.MLAB_HOST);
   var db = mongoose.connection;
+  
 
 // MIDDLEWARE
   app.use(bodyParser.json());
@@ -96,6 +98,7 @@
   app.use('/reports', reports);
   app.use('/users', users);
   app.use('/support', support);
+  app.use('/mailer', mailer)
 
   app.use(function(err, req, res, next){
     console.error(err.stack);

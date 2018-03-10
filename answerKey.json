@@ -1,0 +1,380 @@
+{
+    "inspReportJsonList": [
+        {
+            "violStructID": "Structural elements (maintenance and care)",
+            "violYN": "No",
+            "codeId": [],
+            "violDescUser": "N/A",
+            "endanger": "N/A",
+            "responsibleParty": "N/A",
+            "referral": "N/A",
+            "sceneName": 1,
+            "location": "Outside",
+            "indexNumber": 0
+        },
+        {
+            "violStructID": "Handrails",
+            "violYN": "Yes",
+            "codeId": [
+                "410.503"
+            ],
+            "violDescUser": "Broken handrail on steps leading up to common area front porch",
+            "endanger": "No",
+            "responsibleParty": "Owner",
+            "referral": "N/A",
+            "sceneName": 1,
+            "location": "Outside",
+            "indexNumber": 1
+        },
+    {
+            "violStructID": "Posting of owner and building identification",
+            "violYN": "No",
+            "codeId": [],
+            "violDescUser": "N/A",
+            "endanger": "N/A",
+            "responsibleParty": "N/A",
+            "referral": "N/A",
+            "sceneName": 1,
+            "location": "Outside",
+            "indexNumber": 2
+        },
+    {
+            "violStructID": "Locks, emergency lighting and exit signs",
+            "violYN": "No",
+            "codeId": [],
+            "violDescUser": "N/A",
+            "endanger": "N/A",
+            "responsibleParty": "N/A",
+            "referral": "N/A",
+            "sceneName": 1,
+            "location": "Outside",
+            "indexNumber": 3
+        },
+    {
+            "violStructID": "Egress",
+            "violYN": "No",
+            "codeId": [],
+            "violDescUser": "N/A",
+            "endanger": "N/A",
+            "responsibleParty": "N/A",
+            "referral": "N/A",
+            "sceneName": 1,
+            "location": "Outside",
+            "indexNumber": 4
+        },
+        {
+            "violStructID": "Owner and occupant provided equipment",
+            "violYN": "Yes",
+            "codeId": [
+                "410.100 (A)(2)",
+                "410.750 (O)(1)"
+            ],
+            "violDescUser": "Owner provided stove is broken (one burner won’t light) ",
+            "endanger": "Yes",
+            "responsibleParty": "Owner",
+            "referral": "None",
+            "sceneName": 2,
+            "location": "Kitchen",
+            "indexNumber": 0
+        },
+        {
+            "violStructID": "Water temperature and pressure",
+            "violYN": "No",
+            "codeId": [],
+            "violDescUser": "N/A",
+            "endanger": "N/A",
+            "responsibleParty": "N/A",
+            "referral": "N/A",
+            "sceneName": 2,
+            "location": "Kitchen",
+            "indexNumber": 1
+        },
+        {
+            "violStructID": "Evidence of rodents and insects",
+            "violYN": "Yes",
+            "codeId": [
+                "410.550 (A)",
+                "410.500"
+            ],
+            "violDescUser": "Rodent (mice) droppings and dead mouse observed in cabinet under the sink and hole observed at the back of this cabinet",
+            "endanger": "Yes",
+            "responsibleParty": "Owner",
+            "referral": "None",
+            "sceneName": 2,
+            "location": "Kitchen",
+            "indexNumber": 2
+        },
+        {
+            "violStructID": "Structural elements and facilities (maintenance and care)",
+            "violYN": "Yes",
+            "codeId": [
+                "410.500"
+            ],
+            "violDescUser": "Kitchen floor tiles observed chipped, broken, and missing ",
+            "endanger": "No",
+            "responsibleParty": "Owner",
+            "referral": "None",
+            "sceneName": 2,
+            "location": "Kitchen",
+            "indexNumber": 3
+        },
+        {
+            "violStructID": "Lighting",
+            "violYN": "No",
+            "codeId": [],
+            "violDescUser": "N/A",
+            "endanger": "N/A",
+            "responsibleParty": "N/A",
+            "referral": "N/A",
+            "sceneName": 2,
+            "location": "Kitchen",
+            "indexNumber": 4
+        },
+        {
+            "violStructID": "Cleaning and sanitation",
+            "violYN": "No",
+            "codeId": [],
+            "violDescUser": "N/A",
+            "endanger": "N/A",
+            "responsibleParty": "N/A",
+            "referral": "N/A",
+            "sceneName": 2,
+            "location": "Kitchen",
+            "indexNumber": 5
+        },
+        {
+            "violStructID": "Structural elements (maintenance and care)",
+            "violYN": "Yes",
+            "codeId": [
+                "410.500"
+            ],
+            "violDescUser": "Living room wall has cracks under the window",
+            "endanger": "No",
+            "responsibleParty": "Owner",
+            "referral": "None",
+            "sceneName": 3,
+            "location": "Outside",
+            "indexNumber": 0
+        },
+        {
+            "violStructID": "Windows, screens and locks  ",
+            "violYN": "No",
+            "codeId": [],
+            "violDescUser": "N/A",
+            "endanger": "N/A",
+            "responsibleParty": "N/A",
+            "referral": "N/A",
+            "sceneName": 3,
+            "location": "Living Room",
+            "indexNumber": 1
+        },
+        {
+            "violStructID": "Lighting",
+            "violYN": "No",
+            "codeId": [],
+            "violDescUser": "N/A",
+            "endanger": "N/A",
+            "responsibleParty": "N/A",
+            "referral": "N/A",
+            "sceneName": 3,
+            "location": "Living Room",
+            "indexNumber": 2
+        },
+        {
+            "violStructID": "Equipment (installation and maintenance)",
+            "violYN": "Yes",
+            "codeId": [
+                "410.351"
+            ],
+            "violDescUser": "Baseboard radiator cover is missing",
+            "endanger": "No",
+            "responsibleParty": "Owner",
+            "referral": "None",
+            "sceneName": 3,
+            "location": "Living Room",
+            "indexNumber": 3
+        },
+        {
+            "violStructID": "Structural elements and facilities (maintenance and care)",
+            "violYN": "Yes",
+            "codeId": [
+                "410.500",
+                "410.504 (A)"
+            ],
+            "violDescUser": "Tiles are missing and broken  on  shower wall",
+            "endanger": "Yes",
+            "responsibleParty": "Owner",
+            "referral": "None",
+            "sceneName": 4,
+            "location": "Bathroom",
+            "indexNumber": 0
+        },
+    {
+            "violStructID": "Ventilation",
+            "violYN": "No",
+            "codeId": [],
+            "violDescUser": "N/A",
+            "endanger": "N/A",
+            "responsibleParty": "N/A",
+            "referral": "N/A",
+            "sceneName": 4,
+            "location": "Bathroom",
+            "indexNumber": 1
+        },
+    {
+            "violStructID": "Water temperature and pressure",
+            "violYN": "No",
+            "codeId": [],
+            "violDescUser": "N/A",
+            "endanger": "N/A",
+            "responsibleParty": "N/A",
+            "referral": "N/A",
+            "sceneName": 4,
+            "location": "Bathroom",
+            "indexNumber": 2
+        },
+    {
+            "violStructID": "Lighting",
+            "violYN": "No",
+            "codeId": [],
+            "violDescUser": "N/A",
+            "endanger": "N/A",
+            "responsibleParty": "N/A",
+            "referral": "N/A",
+            "sceneName": 4,
+            "location": "Bathroom",
+            "indexNumber": 3
+        },
+        {
+            "violStructID": "Cleaning and sanitation",
+            "violYN": "Yes",
+            "codeId": [
+                "410.352"
+            ],
+            "violDescUser": "Mold is growing on shower walls (vent fan works)",
+            "endanger": "No",
+            "responsibleParty": "Occupant",
+            "referral": "None",
+            "sceneName": 4,
+            "location": "Bathroom",
+            "indexNumber": 4
+        },
+    {
+            "violStructID": "Structural elements (maintenance and care)",
+            "violYN": "No",
+            "codeId": [],
+            "violDescUser": "N/A",
+            "endanger": "N/A",
+            "responsibleParty": "N/A",
+            "referral": "N/A",
+            "sceneName": 5,
+            "location": "Bedroom 1",
+            "indexNumber": 0
+        },
+    {
+            "violStructID": "Square footage and ceiling height",
+            "violYN": "No",
+            "codeId": [],
+            "violDescUser": "N/A",
+            "endanger": "N/A",
+            "responsibleParty": "N/A",
+            "referral": "N/A",
+            "sceneName": 5,
+            "location": "Bedroom 1",
+            "indexNumber": 1
+        },
+        {
+            "violStructID": "Heating facilities and temperatures",
+            "violYN": "Yes",
+            "codeId": [
+                "410.200",
+                "410.201",
+                "410.750 (B)"
+            ],
+            "violDescUser": "Heat source (radiator) in bedroom 2 is inoperable and room temperature recorded at 58◦F",
+            "endanger": "Yes",
+            "responsibleParty": "Owner",
+            "referral": "None",
+            "sceneName": 5,
+            "location": "Bedroom 1",
+            "indexNumber": 2
+        },
+    {
+            "violStructID": "Structural elements (maintenance and care)",
+            "violYN": "No",
+            "codeId": [],
+            "violDescUser": "N/A",
+            "endanger": "N/A",
+            "responsibleParty": "N/A",
+            "referral": "N/A",
+            "sceneName": 6,
+            "location": "Bedroom 2",
+            "indexNumber": 0
+        },
+        {
+            "violStructID": "Square footage and ceiling height",
+            "violYN": "Yes",
+            "codeId": [
+                "410.400 (B)"
+            ],
+            "violDescUser": "3 beds in bedroom 1 (10 x 10)—occupant confirms 3 teenagers sleep in this room",
+            "endanger": "No",
+            "responsibleParty": "Owner",
+            "referral": "None",
+            "sceneName": 6,
+            "location": "Bedroom 2",
+            "indexNumber": 1
+        },
+    {
+            "violStructID": "Heating facilities and temperatures",
+            "violYN": "No",
+            "codeId": [],
+            "violDescUser": "N/A",
+            "endanger": "N/A",
+            "responsibleParty": "N/A",
+            "referral": "N/A",
+            "sceneName": 6,
+            "location": "Bedroom 2",
+            "indexNumber": 2
+        },
+    {
+            "violStructID": "Structural elements (maintenance and care)",
+            "violYN": "No",
+            "codeId": [],
+            "violDescUser": "N/A",
+            "endanger": "N/A",
+            "responsibleParty": "N/A",
+            "referral": "N/A",
+            "sceneName": 7,
+            "location": "Outside",
+            "indexNumber": 0
+        },
+    {
+            "violStructID": "Windows. screens and locks",
+            "violYN": "No",
+            "codeId": [],
+            "violDescUser": "N/A",
+            "endanger": "N/A",
+            "responsibleParty": "N/A",
+            "referral": "N/A",
+            "sceneName": 7,
+            "location": "Hall",
+            "indexNumber": 1
+        },
+        {
+            "violStructID": "Smoke detectors and carbon monoxide alarms",
+            "violYN": "Yes",
+            "codeId": [
+                "410.482 (A)",
+                "410.750 (N)"
+            ],
+            "violDescUser": "Smoke and carbon monoxide detectors in 2nd floor hallway not operational; covers observed hanging open with wires dangling ",
+            "endanger": "Yes",
+            "responsibleParty": "Owner",
+            "referral": "Fire",
+            "sceneName": 7,
+            "location": "Hall",
+            "indexNumber": 2
+        }
+    ]
+}

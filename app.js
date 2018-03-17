@@ -15,6 +15,8 @@
   var mysql = require('mysql');
   var helpers = require('handlebars-helpers')();
   var util = require('util');
+  var ipfilter = require('express-ipfilter').IpFilter;
+
   
 
   var fs = require('fs');
@@ -92,13 +94,26 @@
   });
 
 
-// ROUTING
+// IP Restrictions since InfoSec can't be bothered
+  var ips = [[process.env.IP_RANGE_1, process.env.IP_RANGE_2], '::1'];
+  app.use(ipfilter(ips, {mode: 'allow'}));
 
+  app.use(function(err, req, res, _next) {
+    console.log('Error handler', err);
+    if(err){
+      res.status(401);
+    }else{
+      res.status(err.status || 500);
+    }
+    res.render('401');
+  });
+
+// ROUTING
   app.use('/', routes);
   app.use('/reports', reports);
   app.use('/users', users);
   app.use('/support', support);
-  app.use('/mailer', mailer)
+  app.use('/mailer', mailer);
 
   app.use(function(err, req, res, next){
     console.error(err.stack);

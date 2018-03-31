@@ -55,6 +55,10 @@
     log_stdout.write(util.format(d) + '\n');
   };
 
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({extended: false}));
+  app.use(cookieParser());
+
   app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: true,

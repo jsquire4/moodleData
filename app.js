@@ -16,8 +16,7 @@
   var helpers = require('handlebars-helpers')();
   var util = require('util');
   var ipfilter = require('express-ipfilter').IpFilter;
-
-  
+  var winston = require('winston');
 
   var fs = require('fs');
   require('dotenv').config();
@@ -34,7 +33,6 @@
   app.engine('handlebars', handlebars.engine);
   app.set('view engine', 'handlebars');
 
-
 // SET PORT AND PUBLIC DIRECTORIES
   app.disable('x-powered-by');
   app.set('port', process.env.PORT || 3000);
@@ -47,9 +45,15 @@
   
 
 // MIDDLEWARE
-  app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({extended: false}));
-  app.use(cookieParser());
+  var fs = require('fs');
+  var util = require('util');
+  var log_file = fs.createWriteStream(__dirname + '/debug.log', {flags : 'w'});
+  var log_stdout = process.stdout;
+
+  console.log = function(d) { //
+    log_file.write(util.format(d) + '\n');
+    log_stdout.write(util.format(d) + '\n');
+  };
 
   app.use(session({
     secret: process.env.SESSION_SECRET,

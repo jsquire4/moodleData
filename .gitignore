@@ -6,3 +6,6 @@ queries.txt
 ehb.xls
 shareableEhbReport.xlsx
 commonMetricsReport.xlsx
+error.log
+combined.log
+debug.log

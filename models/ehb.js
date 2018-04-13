@@ -481,13 +481,13 @@ function fillReport(fromDate, toDate, callback){
             numProf6: sortedProfs[5].count,
             numProfOther: sortedProfs[6].count,
             timeStamp: timeStampNow,
-            numTrained: (sortedProfs[0].count + 
-                 sortedProfs[1].count +
-                 sortedProfs[2].count +
-                 sortedProfs[3].count +
-                 sortedProfs[4].count +
-                 sortedProfs[5].count +
-                 sortedProfs[6].count)
+            numTrained: (parseInt(sortedProfs[0].count) + 
+                 parseInt(sortedProfs[1].count) +
+                 parseInt(sortedProfs[2].count) +
+                 parseInt(sortedProfs[3].count) +
+                 parseInt(sortedProfs[4].count) +
+                 parseInt(sortedProfs[5].count) +
+                 parseInt(sortedProfs[6].count))
           });
           
           course.position = i;

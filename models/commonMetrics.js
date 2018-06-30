@@ -4,6 +4,7 @@ require('datejs');
 require('dotenv').config();
 var xl = require('excel4node');
 var mongoose = require('mongoose');
+var UserReport = require('../models/userReports');
 var Schema = mongoose.Schema;
 
 var connection = mysql.createConnection({
@@ -114,7 +115,7 @@ var cmCourseSchema = new Schema({
 
   dateOfTraining: {
     type: Date,
-    default: new Date()
+    default: null
   },
 
   contactName: {
@@ -123,7 +124,7 @@ var cmCourseSchema = new Schema({
   },
 
   durationHours: {
-    type: Number,
+    type: String,
     default: 0
   },
 
@@ -161,6 +162,16 @@ var cmCourseSchema = new Schema({
     type: Date
   },
 
+  reportOwner: {
+    type: String,
+    default: ""
+  },
+
+  reportName: {
+    type: String,
+    default: ""
+  },
+
   subjectMatter: questionResponseSchema,
 
   actionsToApply: questionResponseSchema,
@@ -190,6 +201,8 @@ function getQuery(queryType, courseid){
     return "SELECT c.fullname AS 'courseName', fb.course AS 'courseId', fb.id AS 'courseFbSetId', fbc.id AS 'submissionId', FROM_UNIXTIME(fbc.timemodified, '%Y-%m-%d') AS 'dateTime', fbc.userid AS 'userId', fbi.id AS 'questionId', fbi.name AS 'question', fbi.presentation AS 'label', fbv.value AS 'response' FROM mdl_feedback as fb JOIN mdl_feedback_item AS fbi ON fb.id = fbi.feedback JOIN mdl_feedback_value AS fbv ON fbi.id = fbv.item JOIN mdl_feedback_completed AS fbc ON fbv.completed = fbc.id JOIN mdl_course AS c ON fb.course = c.id ORDER BY fb.id, CourseId;";
   } else if (queryType == "enrolleeData") {
     return "SELECT ue.timestart, e.courseid FROM mdl_user_enrolments AS ue JOIN mdl_enrol AS e ON ue.enrolid = e.id JOIN mdl_course AS c ON e.courseid = c.id WHERE courseid = " + courseid + ";";
+  } else if (queryType == "courseDuration") {
+    return "SELECT printhours FROM mdl_certificate WHERE course = " + courseid + ";";
   }
 }
 
@@ -471,7 +484,7 @@ function parseCourseObject(course, curCourse, fromDate, toDate, timeStampNow, ca
 
   if (query){
     queryDB(query, function(err, results){
-
+      if (err) throw err;
       course.numTrained = 0;
       for (var m = 0; m < results.length; m++){
         var enrollDate = new Date(results[m].timestart * 1000); // for some reason this date is in seconds and not milliseconds, thanks moodle
@@ -480,11 +493,24 @@ function parseCourseObject(course, curCourse, fromDate, toDate, timeStampNow, ca
         }
       }
       
+      // var durationQuery = getQuery("courseDuration", course.courseId);
+      // queryDB(durationQuery, function(err, hours){
+      //  if (err) throw err;
+      //     if (course.courseId = 64) {
+      //       debugger;
+      //     }
+      //    if (hours != undefined) {
+      //     course.durationHours = hours[0].printhours;
+      //    } else {
+      //     course.durationHours = 0;
+      //    }
+      // });
       callback(null, course);
     });
 
   } else {
     course.numTrained = 0;
+    course.durationHours = 0;
     callback(null, course);
   }
 }
@@ -564,7 +590,7 @@ function validateData(course){ // If some questions are not present in the datab
   return course;
 }
 
-module.exports.createCourses = function(fromDate, toDate, callback){
+module.exports.createCourses = function(fromDate, toDate, reportName, reportOwner, ownerFirst, ownerLast, reportLMS, reportSharingOptions, callback){
     var query = getQuery("feedbackData");
     var results;
     
@@ -583,6 +609,8 @@ module.exports.createCourses = function(fromDate, toDate, callback){
             course = new CmCourse();
             parseCourseObject(course, results[i], fromDate, toDate, timeStampNow, function(err, data){
               course = data;
+              course.reportName = reportName;
+              course.reportOwner = reportOwner;
               course.position = i;
               course.save(function(err, results){
                 i++;
@@ -591,12 +619,10 @@ module.exports.createCourses = function(fromDate, toDate, callback){
             });
           }, function(err) {
             if (err) throw err;
-            CmCourse.remove({timeStamp: {$ne: timeStampNow}}, function(err, results){
-              if (err) throw err;
+              results = "";
               callback(null, results);
             });
-          });
-        
+      
         } else {
           err = new Error('Invalid Date Range');
           results = "There was an error, please try again";
@@ -631,28 +657,30 @@ module.exports.updateCourse = function(course, formData, callback){
     courseDataCompleted: true
   };
 
-  CmCourse.update({courseName: course.courseName, courseId: course.courseId}, courseInfo, function(err, data){
+   CmCourse.update({_id: course.id}, courseInfo, function(err, data){
     if (err) throw err;
     callback(null, data);
   });
 };
 
-module.exports.getCourses = function(callback){
-  CmCourse.find({}, function(err, courses){
+module.exports.getCourses = function(ids, callback){
+  CmCourse.find({'_id': {$in: ids}}, function(err, courses){
     if (err) throw err;
     callback(null, courses);
   });
 };
 
-module.exports.listCourses = function(callback){
-  CmCourse.find({}, {courseName: 1, courseId: 1, courseDataCompleted: 1, reportingPeriodFrom: 1, reportingPeriodTo: 1,  _id: 1}, function(err, courses){
+module.exports.listCourses = function(ids, callback){
+  CmCourse.find({
+    '_id': { $in: ids}}, {courseName: 1, courseId: 1, courseDataCompleted: 1, reportingPeriodFrom: 1, reportingPeriodTo: 1,  _id: 1}, function(err, courses){
     if (err) throw err;
     callback(null, courses);
   });
 };
 
-module.exports.generateExcelFile = function(callback){
-  CmCourse.find({}, function(err, courses){
+module.exports.generateExcelFile = function(ids, callback){
+  CmCourse.find({
+    '_id': { $in: ids}}, function(err, courses){
     if (err) throw err;
     var wb = new xl.Workbook();
     var ws = wb.addWorksheet('Common Metrics Report');
@@ -689,171 +717,179 @@ module.exports.generateExcelFile = function(callback){
     };
 
     // SECTION TITLES
-    ws.cell(1, 1, 1, 4, true).string('Reporting Information').style(styleRed);
-    ws.cell(1, 5, 1, 10, true).string('CourseInformation').style(styleYellow);
-    ws.cell(1, 11, 1, 20, true).string('Q1: Subject Matter Understanding Improved').style(styleBlue);
-    ws.cell(1, 21, 1, 30, true).string('Q2: Identified Actions to Apply Information').style(styleBlue);
-    ws.cell(1, 31, 1, 40, true).string('Q3: Information Was Presented Clearly').style(styleBlue);
-    ws.cell(1, 41, 1, 50, true).string('Q4: Overall Satisfaction').style(styleBlue);
-    ws.cell(1, 51, 1, 60, true).string('Q5: Learning Objecties Were Met').style(styleBlue);
-    ws.cell(1, 61, 1, 62, true).string('Common Metrics Data Collected?').style(styleYellow);
+      ws.cell(1, 1, 1, 5, true).string('Reporting Information').style(styleRed);
+      ws.cell(1, 6, 1, 11, true).string('CourseInformation').style(styleYellow);
+      ws.cell(1, 12, 1, 21, true).string('Q1: Subject Matter Understanding Improved').style(styleBlue);
+      ws.cell(1, 22, 1, 31, true).string('Q2: Identified Actions to Apply Information').style(styleBlue);
+      ws.cell(1, 32, 1, 41, true).string('Q3: Information Was Presented Clearly').style(styleBlue);
+      ws.cell(1, 42, 1, 51, true).string('Q4: Overall Satisfaction').style(styleBlue);
+      ws.cell(1, 52, 1, 61, true).string('Q5: Learning Objecties Were Met').style(styleBlue);
+      ws.cell(1, 62, 1, 63, true).string('Common Metrics Data Collected?').style(styleYellow);
 
     // INPUTED USER DATA
-    ws.cell(2, 1).string("Which LPS Organized Training?").style(styleRed);
-    ws.cell(2, 2).string("Reporting Period").style(styleRed);
-    ws.cell(2, 3).string("Full name we may contact about data").style(styleRed);
-    ws.cell(2, 4).string("Date (Live Training Only)").style(styleRed);
-    ws.cell(2, 5).string("Course Title").style(styleYellow);
-    ws.cell(2, 6).string("Core Competency Domain").style(styleYellow);
-    ws.cell(2, 7).string("Delivery Mode Used to Offer Course").style(styleYellow);
-    ws.cell(2, 8).string("Duration of Course in Hours").style(styleYellow);
-    ws.cell(2, 9).string("Total # Completing Course").style(styleYellow);
-    ws.cell(2, 10).string("Total # Completing Evaluation").style(styleYellow);
+      ws.cell(2, 1).string("Which LPS Organized Training?").style(styleRed);
+      ws.cell(2, 2).string("Reporting Period FROM:").style(styleRed);
+      ws.cell(2, 3).string("Reporting Period TO:").style(styleRed);
+      ws.cell(2, 4).string("Full name we may contact about data").style(styleRed);
+      ws.cell(2, 5).string("Date (Live Training Only)").style(styleRed);
+      ws.cell(2, 6).string("Course Title").style(styleYellow);
+      ws.cell(2, 7).string("Core Competency Domain").style(styleYellow);
+      ws.cell(2, 8).string("Delivery Mode Used to Offer Course").style(styleYellow);
+      ws.cell(2, 9).string("Duration of Course in Hours").style(styleYellow);
+      ws.cell(2, 10).string("Total # Completing Course").style(styleYellow);
+      ws.cell(2, 11).string("Total # Completing Evaluation").style(styleYellow);
 
     // SUBJECT MATTER
-    ws.cell(2, 11).string("# Strongly Disagree").style(styleBlue);
-    ws.cell(2, 12).string("% Strongly Disagree").style(styleBlue);
-    ws.cell(2, 13).string("# Disagree").style(styleBlue);
-    ws.cell(2, 14).string("% Disagree").style(styleBlue);
-    ws.cell(2, 15).string("# Neutral").style(styleBlue);
-    ws.cell(2, 16).string("% Neutral").style(styleBlue);
-    ws.cell(2, 17).string("# Agree").style(styleBlue);
-    ws.cell(2, 18).string("% Agree").style(styleBlue);
-    ws.cell(2, 19).string("# Strongly Agree").style(styleBlue);
-    ws.cell(2, 20).string("% Strongly Agree").style(styleBlue);
+      ws.cell(2, 12).string("# Strongly Disagree").style(styleBlue);
+      ws.cell(2, 13).string("% Strongly Disagree").style(styleBlue);
+      ws.cell(2, 14).string("# Disagree").style(styleBlue);
+      ws.cell(2, 15).string("% Disagree").style(styleBlue);
+      ws.cell(2, 16).string("# Neutral").style(styleBlue);
+      ws.cell(2, 17).string("% Neutral").style(styleBlue);
+      ws.cell(2, 18).string("# Agree").style(styleBlue);
+      ws.cell(2, 19).string("% Agree").style(styleBlue);
+      ws.cell(2, 20).string("# Strongly Agree").style(styleBlue);
+      ws.cell(2, 21).string("% Strongly Agree").style(styleBlue);
 
     // ACTIONS TO APPLY
-    ws.cell(2, 21).string("# Strongly Disagree").style(styleNoColorTitle);
-    ws.cell(2, 22).string("% Strongly Disagree").style(styleNoColorTitle);
-    ws.cell(2, 23).string("# Disagree").style(styleNoColorTitle);
-    ws.cell(2, 24).string("% Disagree").style(styleNoColorTitle);
-    ws.cell(2, 25).string("# Neutral").style(styleNoColorTitle);
-    ws.cell(2, 26).string("% Neutral").style(styleNoColorTitle);
-    ws.cell(2, 27).string("# Agree").style(styleNoColorTitle);
-    ws.cell(2, 28).string("% Agree").style(styleNoColorTitle);
-    ws.cell(2, 29).string("# Strongly Agree").style(styleNoColorTitle);
-    ws.cell(2, 30).string("% Strongly Agree").style(styleNoColorTitle);
+      ws.cell(2, 22).string("# Strongly Disagree").style(styleNoColorTitle);
+      ws.cell(2, 23).string("% Strongly Disagree").style(styleNoColorTitle);
+      ws.cell(2, 24).string("# Disagree").style(styleNoColorTitle);
+      ws.cell(2, 25).string("% Disagree").style(styleNoColorTitle);
+      ws.cell(2, 26).string("# Neutral").style(styleNoColorTitle);
+      ws.cell(2, 27).string("% Neutral").style(styleNoColorTitle);
+      ws.cell(2, 28).string("# Agree").style(styleNoColorTitle);
+      ws.cell(2, 29).string("% Agree").style(styleNoColorTitle);
+      ws.cell(2, 30).string("# Strongly Agree").style(styleNoColorTitle);
+      ws.cell(2, 31).string("% Strongly Agree").style(styleNoColorTitle);
 
     // CLEARLY PRESENTED
-    ws.cell(2, 31).string("# Strongly Disagree").style(styleBlue);
-    ws.cell(2, 32).string("% Strongly Disagree").style(styleBlue);
-    ws.cell(2, 33).string("# Disagree").style(styleBlue);
-    ws.cell(2, 34).string("% Disagree").style(styleBlue);
-    ws.cell(2, 35).string("# Neutral").style(styleBlue);
-    ws.cell(2, 36).string("% Neutral").style(styleBlue);
-    ws.cell(2, 37).string("# Agree").style(styleBlue);
-    ws.cell(2, 38).string("% Agree").style(styleBlue);
-    ws.cell(2, 39).string("# Strongly Agree").style(styleBlue);
-    ws.cell(2, 40).string("% Strongly Agree").style(styleBlue);
+      ws.cell(2, 32).string("# Strongly Disagree").style(styleBlue);
+      ws.cell(2, 33).string("% Strongly Disagree").style(styleBlue);
+      ws.cell(2, 34).string("# Disagree").style(styleBlue);
+      ws.cell(2, 35).string("% Disagree").style(styleBlue);
+      ws.cell(2, 36).string("# Neutral").style(styleBlue);
+      ws.cell(2, 37).string("% Neutral").style(styleBlue);
+      ws.cell(2, 38).string("# Agree").style(styleBlue);
+      ws.cell(2, 39).string("% Agree").style(styleBlue);
+      ws.cell(2, 40).string("# Strongly Agree").style(styleBlue);
+      ws.cell(2, 41).string("% Strongly Agree").style(styleBlue);
 
     // OVERALL SATISFACTION
-    ws.cell(2, 41).string("# Strongly Disagree").style(styleNoColorTitle);
-    ws.cell(2, 42).string("% Strongly Disagree").style(styleNoColorTitle);
-    ws.cell(2, 43).string("# Disagree").style(styleNoColorTitle);
-    ws.cell(2, 44).string("% Disagree").style(styleNoColorTitle);
-    ws.cell(2, 45).string("# Neutral").style(styleNoColorTitle);
-    ws.cell(2, 46).string("% Neutral").style(styleNoColorTitle);
-    ws.cell(2, 47).string("# Agree").style(styleNoColorTitle);
-    ws.cell(2, 48).string("% Agree").style(styleNoColorTitle);
-    ws.cell(2, 49).string("# Strongly Agree").style(styleNoColorTitle);
-    ws.cell(2, 50).string("% Strongly Agree").style(styleNoColorTitle);
+      ws.cell(2, 42).string("# Strongly Disagree").style(styleNoColorTitle);
+      ws.cell(2, 43).string("% Strongly Disagree").style(styleNoColorTitle);
+      ws.cell(2, 44).string("# Disagree").style(styleNoColorTitle);
+      ws.cell(2, 45).string("% Disagree").style(styleNoColorTitle);
+      ws.cell(2, 46).string("# Neutral").style(styleNoColorTitle);
+      ws.cell(2, 47).string("% Neutral").style(styleNoColorTitle);
+      ws.cell(2, 48).string("# Agree").style(styleNoColorTitle);
+      ws.cell(2, 49).string("% Agree").style(styleNoColorTitle);
+      ws.cell(2, 50).string("# Strongly Agree").style(styleNoColorTitle);
+      ws.cell(2, 51).string("% Strongly Agree").style(styleNoColorTitle);
 
     // LEARNING OBJECTIVES MET
-    ws.cell(2, 51).string("# Strongly Disagree").style(styleBlue);
-    ws.cell(2, 52).string("% Strongly Disagree").style(styleBlue);
-    ws.cell(2, 53).string("# Disagree").style(styleBlue);
-    ws.cell(2, 54).string("% Disagree").style(styleBlue);
-    ws.cell(2, 55).string("# Neutral").style(styleBlue);
-    ws.cell(2, 56).string("% Neutral").style(styleBlue);
-    ws.cell(2, 57).string("# Agree").style(styleBlue);
-    ws.cell(2, 58).string("% Agree").style(styleBlue);
-    ws.cell(2, 59).string("# Strongly Agree").style(styleBlue);
-    ws.cell(2, 60).string("% Strongly Agree").style(styleBlue);
+      ws.cell(2, 52).string("# Strongly Disagree").style(styleBlue);
+      ws.cell(2, 53).string("% Strongly Disagree").style(styleBlue);
+      ws.cell(2, 54).string("# Disagree").style(styleBlue);
+      ws.cell(2, 55).string("% Disagree").style(styleBlue);
+      ws.cell(2, 56).string("# Neutral").style(styleBlue);
+      ws.cell(2, 57).string("% Neutral").style(styleBlue);
+      ws.cell(2, 58).string("# Agree").style(styleBlue);
+      ws.cell(2, 59).string("% Agree").style(styleBlue);
+      ws.cell(2, 60).string("# Strongly Agree").style(styleBlue);
+      ws.cell(2, 61).string("% Strongly Agree").style(styleBlue);
 
     // DATA RECORDED
-    ws.cell(2, 61).string("Common Metrics Data Collected?").style(styleYellow);
-    ws.cell(2, 62).string("If not, why?").style(styleYellow);
+      ws.cell(2, 62).string("Common Metrics Data Collected?").style(styleYellow);
+      ws.cell(2, 63).string("If not, why?").style(styleYellow);
     
     var row = 3;
     
     for (var i = 0; i < courses.length; i++){
       var c = courses[i];
       c = validateData(c);
-
+ 
       // INPUTED USER DATA
-      ws.cell(row, 1).string(c.lps).style(styleNoColorData);
-      ws.cell(row, 2).date(new Date(c.reportingPeriodFrom)).style(styleNoColorData);
-      ws.cell(row, 3).string(c.contactName).style(styleNoColorData);
-      ws.cell(row, 4).date(new Date(c.dateOfTraining)).style(styleNoColorData);
-      ws.cell(row, 5).string(c.courseName);
-      ws.cell(row, 6).string(c.primaryCompetency).style(styleNoColorData);
-      ws.cell(row, 7).string(c.deliveryMode).style(styleNoColorData);
-      ws.cell(row, 8).number(c.durationHours);
-      ws.cell(row, 9).number(c.numTrained);
-      ws.cell(row, 10).number(c.numResponses);
+        ws.cell(row, 1).string(c.lps).style(styleNoColorData);
+        ws.cell(row, 2).date(new Date(c.reportingPeriodFrom)).style(styleNoColorData);
+        ws.cell(row, 3).date(new Date(c.reportingPeriodTo)).style(styleNoColorData);
+        ws.cell(row, 4).string(c.contactName).style(styleNoColorData);
+        
+        if (c.dateOfTraining) {
+          ws.cell(row, 5).date(new Date(c.dateOfTraining)).style(styleNoColorData);
+        } else {
+          ws.cell(row, 5).string("NONE").style(styleNoColorData);
+        }
+        
+        ws.cell(row, 6).string(c.courseName);
+        ws.cell(row, 7).string(c.primaryCompetency).style(styleNoColorData);
+        ws.cell(row, 8).string(c.deliveryMode).style(styleNoColorData);
+        ws.cell(row, 9).string(c.durationHours);
+        ws.cell(row, 10).number(c.numTrained);
+        ws.cell(row, 11).number(c.numResponses);
 
       // SUBJECT MATTER
-      ws.cell(row, 11).number(c.subjectMatter.numStrongDis);
-      ws.cell(row, 12).number(c.subjectMatter.percentStrongDis);
-      ws.cell(row, 13).number(c.subjectMatter.numDis);
-      ws.cell(row, 14).number(c.subjectMatter.percentDis);
-      ws.cell(row, 15).number(c.subjectMatter.numNeutral);
-      ws.cell(row, 16).number(c.subjectMatter.percentNeutral);
-      ws.cell(row, 17).number(c.subjectMatter.numAgree);
-      ws.cell(row, 18).number(c.subjectMatter.percentAgree);
-      ws.cell(row, 19).number(c.subjectMatter.numStrongAgree);
-      ws.cell(row, 20).number(c.subjectMatter.percentStrongAgree);
+        ws.cell(row, 12).number(c.subjectMatter.numStrongDis);
+        ws.cell(row, 13).number(c.subjectMatter.percentStrongDis);
+        ws.cell(row, 14).number(c.subjectMatter.numDis);
+        ws.cell(row, 15).number(c.subjectMatter.percentDis);
+        ws.cell(row, 16).number(c.subjectMatter.numNeutral);
+        ws.cell(row, 17).number(c.subjectMatter.percentNeutral);
+        ws.cell(row, 18).number(c.subjectMatter.numAgree);
+        ws.cell(row, 19).number(c.subjectMatter.percentAgree);
+        ws.cell(row, 20).number(c.subjectMatter.numStrongAgree);
+        ws.cell(row, 21).number(c.subjectMatter.percentStrongAgree);
 
       // ACTIONS TO APPLY
-      ws.cell(row, 21).number(c.actionsToApply.numStrongDis);
-      ws.cell(row, 22).number(c.actionsToApply.percentStrongDis);
-      ws.cell(row, 23).number(c.actionsToApply.numDis);
-      ws.cell(row, 24).number(c.actionsToApply.percentDis);
-      ws.cell(row, 25).number(c.actionsToApply.numNeutral);
-      ws.cell(row, 26).number(c.actionsToApply.percentNeutral);
-      ws.cell(row, 27).number(c.actionsToApply.numAgree);
-      ws.cell(row, 28).number(c.actionsToApply.percentAgree);
-      ws.cell(row, 29).number(c.actionsToApply.numStrongAgree);
-      ws.cell(row, 30).number(c.actionsToApply.percentStrongAgree);
+        ws.cell(row, 22).number(c.actionsToApply.numStrongDis);
+        ws.cell(row, 23).number(c.actionsToApply.percentStrongDis);
+        ws.cell(row, 24).number(c.actionsToApply.numDis);
+        ws.cell(row, 25).number(c.actionsToApply.percentDis);
+        ws.cell(row, 26).number(c.actionsToApply.numNeutral);
+        ws.cell(row, 27).number(c.actionsToApply.percentNeutral);
+        ws.cell(row, 28).number(c.actionsToApply.numAgree);
+        ws.cell(row, 29).number(c.actionsToApply.percentAgree);
+        ws.cell(row, 30).number(c.actionsToApply.numStrongAgree);
+        ws.cell(row, 31).number(c.actionsToApply.percentStrongAgree);
 
       // CLEARLY PRESENTED
-      ws.cell(row, 31).number(c.clearlyPresented.numStrongDis);
-      ws.cell(row, 32).number(c.clearlyPresented.percentStrongDis);
-      ws.cell(row, 33).number(c.clearlyPresented.numDis);
-      ws.cell(row, 34).number(c.clearlyPresented.percentDis);
-      ws.cell(row, 35).number(c.clearlyPresented.numNeutral);
-      ws.cell(row, 36).number(c.clearlyPresented.percentNeutral);
-      ws.cell(row, 37).number(c.clearlyPresented.numAgree);
-      ws.cell(row, 38).number(c.clearlyPresented.percentAgree);
-      ws.cell(row, 39).number(c.clearlyPresented.numStrongAgree);
-      ws.cell(row, 40).number(c.clearlyPresented.percentStrongAgree);
+        ws.cell(row, 32).number(c.clearlyPresented.numStrongDis);
+        ws.cell(row, 33).number(c.clearlyPresented.percentStrongDis);
+        ws.cell(row, 34).number(c.clearlyPresented.numDis);
+        ws.cell(row, 35).number(c.clearlyPresented.percentDis);
+        ws.cell(row, 36).number(c.clearlyPresented.numNeutral);
+        ws.cell(row, 37).number(c.clearlyPresented.percentNeutral);
+        ws.cell(row, 38).number(c.clearlyPresented.numAgree);
+        ws.cell(row, 39).number(c.clearlyPresented.percentAgree);
+        ws.cell(row, 40).number(c.clearlyPresented.numStrongAgree);
+        ws.cell(row, 41).number(c.clearlyPresented.percentStrongAgree);
 
       // OVERALL SATISFACTION
-      ws.cell(row, 41).number(c.overallSatisfaction.numStrongDis);
-      ws.cell(row, 42).number(c.overallSatisfaction.percentStrongDis);
-      ws.cell(row, 43).number(c.overallSatisfaction.numDis);
-      ws.cell(row, 44).number(c.overallSatisfaction.percentDis);
-      ws.cell(row, 45).number(c.overallSatisfaction.numNeutral);
-      ws.cell(row, 46).number(c.overallSatisfaction.percentNeutral);
-      ws.cell(row, 47).number(c.overallSatisfaction.numAgree);
-      ws.cell(row, 48).number(c.overallSatisfaction.percentAgree);
-      ws.cell(row, 49).number(c.overallSatisfaction.numStrongAgree);
-      ws.cell(row, 50).number(c.overallSatisfaction.percentStrongAgree);
+        ws.cell(row, 42).number(c.overallSatisfaction.numStrongDis);
+        ws.cell(row, 43).number(c.overallSatisfaction.percentStrongDis);
+        ws.cell(row, 44).number(c.overallSatisfaction.numDis);
+        ws.cell(row, 45).number(c.overallSatisfaction.percentDis);
+        ws.cell(row, 46).number(c.overallSatisfaction.numNeutral);
+        ws.cell(row, 47).number(c.overallSatisfaction.percentNeutral);
+        ws.cell(row, 48).number(c.overallSatisfaction.numAgree);
+        ws.cell(row, 49).number(c.overallSatisfaction.percentAgree);
+        ws.cell(row, 50).number(c.overallSatisfaction.numStrongAgree);
+        ws.cell(row, 51).number(c.overallSatisfaction.percentStrongAgree);
 
       // LEARNING OBJECTIVES MET
-      ws.cell(row, 51).number(c.learningObejectivesMet.numStrongDis);
-      ws.cell(row, 52).number(c.learningObejectivesMet.percentStrongDis);
-      ws.cell(row, 53).number(c.learningObejectivesMet.numDis);
-      ws.cell(row, 54).number(c.learningObejectivesMet.percentDis);
-      ws.cell(row, 55).number(c.learningObejectivesMet.numNeutral);
-      ws.cell(row, 56).number(c.learningObejectivesMet.percentNeutral);
-      ws.cell(row, 57).number(c.learningObejectivesMet.numAgree);
-      ws.cell(row, 58).number(c.learningObejectivesMet.percentAgree);
-      ws.cell(row, 59).number(c.learningObejectivesMet.numStrongAgree);
-      ws.cell(row, 60).number(c.learningObejectivesMet.percentStrongAgree);
+        ws.cell(row, 52).number(c.learningObejectivesMet.numStrongDis);
+        ws.cell(row, 53).number(c.learningObejectivesMet.percentStrongDis);
+        ws.cell(row, 54).number(c.learningObejectivesMet.numDis);
+        ws.cell(row, 55).number(c.learningObejectivesMet.percentDis);
+        ws.cell(row, 56).number(c.learningObejectivesMet.numNeutral);
+        ws.cell(row, 57).number(c.learningObejectivesMet.percentNeutral);
+        ws.cell(row, 58).number(c.learningObejectivesMet.numAgree);
+        ws.cell(row, 59).number(c.learningObejectivesMet.percentAgree);
+        ws.cell(row, 60).number(c.learningObejectivesMet.numStrongAgree);
+        ws.cell(row, 61).number(c.learningObejectivesMet.percentStrongAgree);
 
       // DATA RECORDED
-      ws.cell(row, 61).bool(true).style(styleNoColorData);
+      ws.cell(row, 62).bool(true).style(styleNoColorData);
 
       row += 1;
     }
@@ -861,5 +897,23 @@ module.exports.generateExcelFile = function(callback){
     var fileName = "commonMetricsReport.xlsx";
     wb.write(fileName);
     callback(null, fileName);
+  });
+};
+
+module.exports.saveCoursesToUserReport = function(reportName, reportType, reportOwner, ownerFirst, ownerLast, reportLMS, reportSharingOptions, callback){
+  CmCourse.find({reportName: reportName, reportOwner: reportOwner}, {_id: 1}, function(err, reportData){
+    if (err) throw err;
+   
+    UserReport.createReport(reportName, reportType, reportData, reportOwner, ownerFirst, ownerLast, reportLMS, reportSharingOptions, function(err, data){
+      if (err) throw err;
+      callback(null, data);
+    });
+  });
+};
+
+module.exports.deleteCourses = function(ids, callback){
+  CmCourse.remove({'_id': {$in: ids}}, function(err, data){
+    if (err) throw err;
+    callback(null, data);
   });
 };

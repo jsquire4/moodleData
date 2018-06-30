@@ -3,31 +3,72 @@ var router = express.Router();
 var Reporter = require("../models/reports");
 var EhbReport = require("../models/ehb");
 var CmReport = require("../models/commonMetrics");
+var UserReport = require("../models/userReports");
 var xl = require("excel4node");
 var fs = require('fs');
 
-
-
 // REPORTS HOME AND INITIAL VIEW
 router.get('/index', ensureVerification, function(req, res){
-  res.render('reportindex');
+  var id = req.user.id;
+  // var userLMS = req.user.lms;
+  var userLMS = "Global";
+  var isAdmin = req.user.admin;
+  UserReport.listAvailableReports(userLMS, id, isAdmin, function(err, reports){
+    res.render('reportindex', {reports: reports, admin: isAdmin});
+  });
 });
 
+// REPORTS FULL PAGE ARCHIVE
+router.get('/allreports', ensureVerification, function(req, res){
+  var id = req.user.id;
+  // var userLMS = req.user.lms;
+  var userLMS = "Global";
+  var isAdmin = req.user.admin;
+  UserReport.listAvailableReports(userLMS, id, isAdmin, function(err, reports){
+    res.render('reportsList', {reports: reports, admin: isAdmin});
+  });
+});
+
+// CREATE NEW REPORT
 router.post('/report', ensureVerification, function(req, res){
   var reportType = req.body.reporttype;
+  var reportName = req.body.reportName;
   var fromDate = req.body.fromdate;
   var toDate = req.body.todate;
-
+  var reportOwner = req.user.id;
+  var ownerFirst = req.user.firstname;
+  var ownerLast = req.user.lastname;
+  var reportLMS = "Global";
+  var reportSharingOptions = req.body.sharingOptions;
+  // var reportLMS = req.user.lms;
+  
   if (reportType == "ehb"){ 
-    EhbReport.createCourses(fromDate, toDate, function(err, report){
-      EhbReport.listCourses(function(err, courses){
-        res.render('ehbReportCreator', {courses: courses, fromDate: fromDate, toDate: toDate, returningToSaved: false});
+    EhbReport.createCourses(fromDate, toDate, reportName, reportOwner, ownerFirst, ownerLast, reportLMS, reportSharingOptions, function(err, report){
+      EhbReport.saveCoursesToUserReport(reportName, reportType, reportOwner, ownerFirst, ownerLast, reportLMS, reportSharingOptions, function(err, data){
+        var reportId = data._id;
+        if (err) throw err;
+        UserReport.getCourseReportIds(reportName, reportOwner, function(err, ids){
+          if (err) throw err;
+          EhbReport.listCourses(ids, function(err, courses){
+            if (err) throw err;
+            res.render('ehbReportCreator', {reportId: reportId, courses: courses, reportName: reportName, returningToSaved: false });
+          });
+        });
       });
     });
+
   } else if (reportType == "commonMetrics") {
-    CmReport.createCourses(fromDate, toDate, function(err, report){
-      CmReport.listCourses(function(err, courses){
-        res.render('commonMetrics', {courses: courses, fromDate: fromDate, toDate: toDate, returningToSave: false});
+    CmReport.createCourses(fromDate, toDate, reportName, reportOwner, ownerFirst, ownerLast, reportLMS, reportSharingOptions, function(err, report){
+      CmReport.saveCoursesToUserReport(reportName, reportType, reportOwner, ownerFirst, ownerLast, reportLMS, reportSharingOptions, function(err, data){
+        var reportId = data._id;
+        if (err) throw err;
+        UserReport.getCourseReportIds(reportName, reportOwner, function(err, ids){
+          if (err) throw err;
+          CmReport.listCourses(ids, function(err, courses){
+            if (err) throw err;
+            res.render('commonMetrics', {reportId: reportId, courses: courses, reportName: reportName, fromDate: fromDate, toDate: toDate, returningToSave: false});
+          });
+        });
       });
     });
 
@@ -39,25 +80,51 @@ router.post('/report', ensureVerification, function(req, res){
   }
 });
 
-/* 
-  Coded myself into a corner with the form saving and date parsing....
-  Sorry to whoever will inherit this.
-  Also, keep in mind that this runs off of a free MLAB db, so we have to be conscious of the amount of data we store.
-  Each new report deletes the old one, which isn't ideal, but also not a huge deal since you can just generate a new one with the old dates.
-*/
-
-// EHB REPORT
-router.get('/ehb', ensureVerification, function(req, res){
-  EhbReport.listCourses(function(err, courses){
-    var fromDate = courses[0].reportingPeriodFrom;
-    var toDate = courses[0].reportingPeriodTo;
-    fromDate = fromDate.format("M dS Y");
-    toDate = toDate.format("M dS Y");
+// EDIT AND VIEW REPORTS
+router.get('/viewreport/:report_id', ensureVerification, function(req, res){
+  UserReport.getReport(req.params.report_id, function(err, report){
     if (err) throw err;
-    res.render('ehbReportCreator', {courses: courses, fromDate: fromDate, toDate: toDate, returningToSaved: true}); 
+
+    if (report.reportType == "ehb") {
+      EhbReport.listCourses(report.reportData, function(err, courses){
+        if (err) throw err;
+        res.render('ehbReportCreator', {reportId: req.params.report_id, courses: courses});
+      });
+    } else if (report.reportType == "commonMetrics") {
+      CmReport.listCourses(report.reportData, function(err, courses){
+        if (err) throw err;
+        res.render('commonMetrics', {reportId: req.params.report_id, courses: courses});
+      });
+    } 
   });
 });
 
+// DELTE REPORT
+router.get('/deletereport/:report_id', ensureVerification, function(req, res){
+  UserReport.getReport(req.params.report_id, function(err, report){
+    if (err) throw err;
+    if (report.reportType == "ehb"){
+      EhbReport.deleteCourses(report.reportData, function(err, data){
+        if (err) throw err;
+        UserReport.deleteReport(req.params.report_id, function(err, data){
+          res.redirect('/reports/index');
+        });
+      });
+
+    } else if (report.reportType == "commonMetrics"){
+      CmReport.deleteCourses(report.reportData, function(err, data){
+        if (err) throw err;
+        UserReport.deleteReport(req.params.report_id, function(err, data){
+          res.redirect('/reports/index');
+        });
+      });
+    } else {
+
+    }
+  });
+});
+
+// EHB -- GET SINGLE COURSE
 router.get('/ehb/:course_id', ensureVerification, function(req, res) {
   EhbReport.findById(req.params.course_id, function(err, course) {
       if (err) {
@@ -68,6 +135,7 @@ router.get('/ehb/:course_id', ensureVerification, function(req, res) {
   });
 });
 
+// EHB -- UPDATE SINGLE COURSE
 router.post('/ehb/:course_id', ensureVerification, function(req, res) {
   var data = req.body;
   EhbReport.findById(req.params.course_id, function(err, course) {
@@ -80,19 +148,7 @@ router.post('/ehb/:course_id', ensureVerification, function(req, res) {
   });
 });
 
-
-// COMMMON METRICS REPORT
-router.get('/commonmetrics', ensureVerification, function(req, res){
-  CmReport.listCourses(function(err, courses){
-    var fromDate = courses[0].reportingPeriodFrom;
-    var toDate = courses[0].reportingPeriodTo;
-    fromDate = fromDate.format("M dS Y");
-    toDate = toDate.format("M dS Y");
-    if (err) throw err;
-    res.render('commonMetrics', {courses: courses, fromDate: fromDate, toDate: toDate, returningToSaved: true}); 
-  });
-});
-
+// COMMMON METRICS -- GET SINGLE COURSE
 router.get('/commonmetrics/:course_id', ensureVerification, function(req, res) {
   CmReport.findById(req.params.course_id, function(err, course) {
       if (err) {
@@ -103,6 +159,7 @@ router.get('/commonmetrics/:course_id', ensureVerification, function(req, res) {
   });
 });
 
+// COMMMON METRICS -- UPDATE SINGLE COURSE
 router.post('/commonmetrics/:course_id', ensureVerification, function(req, res) {
   var data = req.body;
   CmReport.findById(req.params.course_id, function(err, course) {
@@ -115,63 +172,66 @@ router.post('/commonmetrics/:course_id', ensureVerification, function(req, res) 
   });
 });
 
+// EXCEL GENERATOR
+router.get('/generate-excel/:report_id', ensureVerification, function(req, res) {
+  UserReport.getReport(req.params.report_id, function(err, report){
+    if(err) throw err;
 
-// EXCEL GENERATORS
-router.get('/generate-excel/commonmetrics', ensureVerification, function(req, res) {
-  CmReport.generateExcelFile(function(err, fileName){
-    
-    setTimeout(function(){ // I don't know how else to do this right now, but it makes me cringe too don't worry
-      if (fs.existsSync(fileName)) {
-        res.download(fileName);
-      } else {
-        setTimeout(function(){
+    if(report.reportType == "ehb") {
+      EhbReport.generateExcelFile(report.reportData, function(err, fileName){
+        setTimeout(function(){ // I don't know how else to do this right now, but it makes me cringe too don't worry
           if (fs.existsSync(fileName)) {
             res.download(fileName);
           } else {
-            res.sendStatus(500);
+            setTimeout(function(){
+              if (fs.existsSync(fileName)) {
+                res.download(fileName);
+              } else {
+                res.sendStatus(500);
+              }
+            }, 5000);
           }
-        }, 5000);
-      }
-    }, 3000);
-  
-  });
-});
+        }, 3000);
+      });
 
-router.get('/generate-excel/ehb', ensureVerification, function(req, res) {
-  EhbReport.generateExcelFile(function(err, fileName){
-    
-    setTimeout(function(){ // I don't know how else to do this right now, but it makes me cringe too don't worry
-      if (fs.existsSync(fileName)) {
-        res.download(fileName);
-      } else {
-        setTimeout(function(){
+    } else if (report.reportType == "commonMetrics") {
+      CmReport.generateExcelFile(report.reportData, function(err, fileName){
+        setTimeout(function(){ // I don't know how else to do this right now, but it makes me cringe too don't worry
           if (fs.existsSync(fileName)) {
             res.download(fileName);
           } else {
-            res.sendStatus(500);
+            setTimeout(function(){
+              if (fs.existsSync(fileName)) {
+                res.download(fileName);
+              } else {
+                res.sendStatus(500);
+              }
+            }, 5000);
           }
-        }, 5000);
-      }
-    }, 3000);
-  
+        }, 3000);
+      });
+    }
   });
 });
 
+// TABLE GENERATOR
+router.get('/generate-table/:report_id', ensureVerification, function(req, res){
+  UserReport.getReport(req.params.report_id, function(err, report){
+    if (err) throw err;
 
-// TABLE GENERATORS
-router.get('/generate-table/ehb', ensureVerification, function(req, res) {
-  EhbReport.getCourses(function(err, data){
-    res.render('ehbTable', {data: data});
+    if (report.reportType == "ehb"){
+      EhbReport.getCourses(report.reportData, function(err, data){
+        res.render('ehbTable', {reportId: req.params.report_id, data: data});
+      });
+    } else if (report.reportType == "commonMetrics"){
+      CmReport.getCourses(report.reportData, function(err, data){
+        res.render('commonMetricsTable', {reportId: req.params.report_id, data: data});
+      });
+    }
   });
 });
 
-router.get('/generate-table/commonmetrics', ensureVerification, function(req, res) {
-  CmReport.getCourses(function(err, data){
-    res.render('commonMetricsTable', {data: data});
-  });
-});
-
-
+// USER VERIFICATION
 function ensureVerification(req, res, next){
   if(req.isAuthenticated()){
     if(req.user.access){
@@ -186,6 +246,6 @@ function ensureVerification(req, res, next){
     res.redirect('/users/login');
   }
 }
- 
+
 module.exports = router;  
 

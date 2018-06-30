@@ -90,9 +90,11 @@
 <hr>
 
 <div class = "excel-table-buttons">
-  <a class="btn btn-success btn-lg excel-table" href="/reports/generate-excel/commonmetrics">Download to Excel</a>
-  <a class="btn btn-primary btn-lg online-table" href="/reports/generate-table/commonmetrics">View Table Online</a>
+  <a class="btn btn-success btn-lg excel-table" href="/reports/generate-excel/{{reportId}}">Download to Excel</a>
+  <a class="btn btn-primary btn-lg online-table" href="/reports/generate-table/{{reportId}}">View Table Online</a>
 </div>
+
+{{!-- AJAX CALLS FOR GET AND UPDATE --}}
 <script type = "text/javascript">
   $(".course-link").click(function(e){
     e.preventDefault();

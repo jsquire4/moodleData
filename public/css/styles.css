@@ -197,9 +197,14 @@ button:focus, input[type="button"]:focus {
 }
 
 .bottom-frontpage-block {
-  margin-bottom: 25px;
+  display: flex;
+  justify-content: space-around;
 }
 
+.card-footer {
+  display: flex;
+  justify-content: space-around;
+}
 
 /* REPORTS CSS*/
 

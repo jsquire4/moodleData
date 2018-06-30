@@ -4,6 +4,7 @@ require('datejs');
 require('dotenv').config();
 var xl = require('excel4node');
 var mongoose = require('mongoose');
+var UserReport = require('../models/userReports');
 var Schema = mongoose.Schema;
 
 var connection = mysql.createConnection({
@@ -19,6 +20,7 @@ connection.connect(function(err){
 });
 
 var ehbCourseSchema = new Schema({
+
   courseId: {
     type: Number,
     default: 0
@@ -46,7 +48,7 @@ var ehbCourseSchema = new Schema({
 
   dateOfTraining: {
     type: Date,
-    default: new Date()
+    default: null
   },
 
   contactName: {
@@ -199,9 +201,24 @@ var ehbCourseSchema = new Schema({
     default: 0
   },
 
+  allProfessions: {
+    type: Array,
+    default: []
+  },
+
   courseDataCompleted: {
     type: Boolean,
     default: false
+  },
+
+  reportOwner: {
+    type: String,
+    default: ""
+  },
+
+  reportName: {
+    type: String,
+    default: ""
   },
 
   timeStamp: {
@@ -324,6 +341,15 @@ function listTopProfessions(course, professionsList){
     }
   }
 
+  //ADDED TO GET ALL PROFESSIONS -- NOT EFFICIENT TO HAVE THE SAME CODE TWICE BUT IT WORKS FOR NOW
+  for (var k = 0; k < profSorted.length; k++){
+    if(profSorted[k]){
+      course.allProfessions[k] = {profession: profSorted[k], count: topProfessions[profSorted[k]]};
+    } else {
+      course.allProfessions[k] = {profession: "None", count: "0"};
+    }
+  }
+
   if (profSorted.length > 7){
     var count = 0;
     for (var k = 7; k < profSorted.length; k++){
@@ -406,6 +432,7 @@ function indexCoursesWithEnrolledStudents(data, studentsList, fromDate, toDate){
     this.numTrainedByCourse = this.students.length;
     this.professions = [];
     this.sortedProfessions = [];
+    this.allProfessions = [];
   }
 
   for(var i = 0; i < data.length; i++){
@@ -433,14 +460,14 @@ function indexCoursesWithEnrolledStudents(data, studentsList, fromDate, toDate){
   }
   return coursesList;
 }
-
+ 
 function clearOldCourses(callback){
   EhbCourse.remove({}, function(err, removed){
     callback(err, removed);
   });
 }
 
-function fillReport(fromDate, toDate, callback){
+function fillReport(fromDate, toDate, reportName, reportOwner, callback){
   var studentsList;
   var coursesList;
 
@@ -487,29 +514,41 @@ function fillReport(fromDate, toDate, callback){
                  parseInt(sortedProfs[3].count) +
                  parseInt(sortedProfs[4].count) +
                  parseInt(sortedProfs[5].count) +
-                 parseInt(sortedProfs[6].count))
+                 parseInt(sortedProfs[6].count)),
+            allProfessions: course.allProfessions,
+            reportName: reportName,
+            reportOwner: reportOwner
           });
-          
           course.position = i;
           course.save(function(err, results){
             i++;
             next();
           });
+
         }, function(err) {
         if (err) throw err;
-        EhbCourse.remove({timeStamp: {$ne: timeStampNow}}, function(err, results){
-          if (err) throw err;
-          callback(null, results);
-        });
+        results = "";
+        callback(null, results);
       });
     });
   });
 }
 
-module.exports.createCourses = function(fromDate, toDate, callback){
-  fillReport(fromDate, toDate, function(err, results){
+module.exports.createCourses = function(fromDate, toDate, reportName, reportOwner, ownerFirst, ownerLast, reportLMS, reportSharingOptions, callback){
+  fillReport(fromDate, toDate, reportName, reportOwner, function(err, results){
     if(err) throw err;
     callback(null, results);
+  });
+};
+
+module.exports.saveCoursesToUserReport = function(reportName, reportType, reportOwner, ownerFirst, ownerLast, reportLMS, reportSharingOptions, callback){
+  EhbCourse.find({reportName: reportName, reportOwner: reportOwner}, {_id: 1}, function(err, reportData){
+    if (err) throw err;
+   
+    UserReport.createReport(reportName, reportType, reportData, reportOwner, ownerFirst, ownerLast, reportLMS, reportSharingOptions, function(err, data){
+      if (err) throw err;
+      callback(null, data);
+    });
   });
 };
 
@@ -521,7 +560,6 @@ module.exports.getOneCourse = function(courseName, courseId, callback){
 };
 
 module.exports.updateCourse = function(course, formData, callback){
-
   var courseInfo = {
     lps: formData.ehblps,
     dateOfTraining: formData.ehbdateoftraining,
@@ -540,28 +578,31 @@ module.exports.updateCourse = function(course, formData, callback){
     courseDataCompleted: true
   };
 
-  EhbCourse.update({courseName: course.courseName, courseId: course.courseId}, courseInfo, function(err, data){
+  EhbCourse.update({_id: course.id}, courseInfo, function(err, data){
     if (err) throw err;
     callback(null, data);
   });
 };
 
-module.exports.getCourses = function(callback){
-  EhbCourse.find({}, function(err, courses){
+module.exports.getCourses = function(ids, callback){
+  EhbCourse.find({'_id': {$in: ids}}, function(err, courses){
     if (err) throw err;
     callback(null, courses);
   });
 };
 
-module.exports.listCourses = function(callback){
-  EhbCourse.find({}, {courseName: 1, courseId: 1, courseDataCompleted: 1, reportingPeriodFrom: 1, reportingPeriodTo: 1,  _id: 1}, function(err, courses){
+module.exports.listCourses = function(ids, callback){
+  EhbCourse.find({
+    '_id': { $in: ids}}, {courseName: 1, courseId: 1, courseDataCompleted: 1, reportingPeriodFrom: 1, reportingPeriodTo: 1,  _id: 1}, function(err, courses){
     if (err) throw err;
     callback(null, courses);
   });
 };
 
-module.exports.generateExcelFile = function(callback){
-  EhbCourse.find({}, function(err, courses){
+module.exports.generateExcelFile = function(ids, callback){
+
+  EhbCourse.find({
+    '_id': { $in: ids}}, function(err, courses){
     var wb = new xl.Workbook();
     var ws = wb.addWorksheet('EHB Report');
 
@@ -583,82 +624,90 @@ module.exports.generateExcelFile = function(callback){
           border: {left: {style: 'thin', color: '000000'}, right: {style: 'thin', color: '000000'}, top: {style: 'thin', color: '000000'}, bottom: {style: 'thin', color: '000000'}}
         };
 
-    ws.cell(1, 1, 1, 4, true).string('Reporting Information').style(styleBlue);
+    ws.cell(1, 1, 1, 5, true).string('Reporting Information').style(styleBlue);
     // ...
-      ws.cell(1, 5, 1, 20, true).string('CE1').style(styleRed);
-      ws.cell(1, 21, 1, 34, true).string('CE2').style(styleYellow);
+      ws.cell(1, 6, 1, 21, true).string('CE1').style(styleRed);
+      ws.cell(1, 22, 1, 35, true).string('CE2').style(styleYellow);
       ws.cell(2, 1).string('LPS').style(styleBlue);
-      ws.cell(2, 2).string('Reporting Period').style(styleBlue);
-      ws.cell(2, 3).string('Date of Training (if live training session)').style(styleBlue);
-      ws.cell(2, 4).string('Contact Name').style(styleBlue);
-      ws.cell(2, 5).string('Course Title').style(styleRed);
-      ws.cell(2, 6).string('Select Whether Course is Approved for Continuing Education Credit').style(styleRed);
-      ws.cell(2, 7).string('Enter the Duration of the Course in Clock Hours').style(styleRed);
-      ws.cell(2, 8).string('Enter # of Times Course was Offered').style(styleRed);
-      ws.cell(2, 9).string('Select Delivery Mode Used to Offer Course').style(styleRed);
-      ws.cell(2, 10).string('Select Type(s) of Partnership(s) Established for the Purposes of Delivering this Course (1)').style(styleRed);
-      ws.cell(2, 11).string('Select Type(s) of Partnership(s) Established for the Purposes of Delivering this Course (2)').style(styleRed);
-      ws.cell(2, 12).string('Select Type(s) of Partnership(s) Established for the Purposes of Delivering this Course (3)').style(styleRed);
-      ws.cell(2, 13).string('Select Type(s) of Partnership(s) Established for the Purposes of Delivering this Course (4)').style(styleRed);
-      ws.cell(2, 14).string('Select Whether Employment Location Data are Available for Individuals Trained').style(styleRed);
-      ws.cell(2, 15).string('Enter # of Individuals Trained in a Primary Care Setting').style(styleRed);
-      ws.cell(2, 16).string('Enter # of Individuals Trained in a Medically Underserved Community').style(styleRed);
-      ws.cell(2, 17).string('Enter # of Individuals Trained in a Rural Area').style(styleRed);
-      ws.cell(2, 18).string('Select the Courses Primary Topic Area').style(styleRed);
-      ws.cell(2, 19).string('Select the Primary Competency Addressed by the Course').style(styleRed);
-      ws.cell(2, 20).string('Select the Competency Tier for this Course').style(styleRed);
-      ws.cell(2, 21).string('Enter Total # of Individuals Trained').style(styleYellow);
-      ws.cell(2, 22).string('Select Profession and Discipline of Individuals Trained (1)').style(styleYellow);
-      ws.cell(2, 23).string('Enter # Trained in this Profession and Discipline').style(styleYellow);
-      ws.cell(2, 24).string('Select Profession and Discipline of Individuals Trained (2)').style(styleYellow);
-      ws.cell(2, 25).string('Enter # Trained in this Profession and Discipline').style(styleYellow);
-      ws.cell(2, 26).string('Select Profession and Discipline of Individuals Trained (3)').style(styleYellow);
-      ws.cell(2, 27).string('Enter # Trained in this Profession and Discipline').style(styleYellow);
-      ws.cell(2, 28).string('Select Profession and Discipline of Individuals Trained (4)').style(styleYellow);
-      ws.cell(2, 29).string('Enter # Trained in this Profession and Discipline').style(styleYellow);
-      ws.cell(2, 30).string('Select Profession and Discipline of Individuals Trained (5)').style(styleYellow);
-      ws.cell(2, 31).string('Enter # Trained in this Profession and Discipline').style(styleYellow);
-      ws.cell(2, 32).string('Select Profession and Discipline of Individuals Trained (6)').style(styleYellow);
-      ws.cell(2, 33).string('Enter # Trained in this Profession and Discipline').style(styleYellow);
-    ws.cell(2, 34).string('Enter Remaining # of Trainees for this Course').style(styleYellow);
+      ws.cell(2, 2).string('Reporting Period From:').style(styleBlue);
+      ws.cell(2, 3).string('Reporting Period To:').style(styleBlue);
+      ws.cell(2, 4).string('Date of Training (if live training session)').style(styleBlue);
+      ws.cell(2, 5).string('Contact Name').style(styleBlue);
+      ws.cell(2, 6).string('Course Title').style(styleRed);
+      ws.cell(2, 7).string('Select Whether Course is Approved for Continuing Education Credit').style(styleRed);
+      ws.cell(2, 8).string('Enter the Duration of the Course in Clock Hours').style(styleRed);
+      ws.cell(2, 9).string('Enter # of Times Course was Offered').style(styleRed);
+      ws.cell(2, 10).string('Select Delivery Mode Used to Offer Course').style(styleRed);
+      ws.cell(2, 11).string('Select Type(s) of Partnership(s) Established for the Purposes of Delivering this Course (1)').style(styleRed);
+      ws.cell(2, 12).string('Select Type(s) of Partnership(s) Established for the Purposes of Delivering this Course (2)').style(styleRed);
+      ws.cell(2, 13).string('Select Type(s) of Partnership(s) Established for the Purposes of Delivering this Course (3)').style(styleRed);
+      ws.cell(2, 14).string('Select Type(s) of Partnership(s) Established for the Purposes of Delivering this Course (4)').style(styleRed);
+      ws.cell(2, 15).string('Select Whether Employment Location Data are Available for Individuals Trained').style(styleRed);
+      ws.cell(2, 16).string('Enter # of Individuals Trained in a Primary Care Setting').style(styleRed);
+      ws.cell(2, 17).string('Enter # of Individuals Trained in a Medically Underserved Community').style(styleRed);
+      ws.cell(2, 18).string('Enter # of Individuals Trained in a Rural Area').style(styleRed);
+      ws.cell(2, 19).string('Select the Courses Primary Topic Area').style(styleRed);
+      ws.cell(2, 20).string('Select the Primary Competency Addressed by the Course').style(styleRed);
+      ws.cell(2, 21).string('Select the Competency Tier for this Course').style(styleRed);
+      ws.cell(2, 22).string('Enter Total # of Individuals Trained').style(styleYellow);
+      ws.cell(2, 23).string('Select Profession and Discipline of Individuals Trained (1)').style(styleYellow);
+      ws.cell(2, 24).string('Enter # Trained in this Profession and Discipline').style(styleYellow);
+      ws.cell(2, 25).string('Select Profession and Discipline of Individuals Trained (2)').style(styleYellow);
+      ws.cell(2, 26).string('Enter # Trained in this Profession and Discipline').style(styleYellow);
+      ws.cell(2, 27).string('Select Profession and Discipline of Individuals Trained (3)').style(styleYellow);
+      ws.cell(2, 28).string('Enter # Trained in this Profession and Discipline').style(styleYellow);
+      ws.cell(2, 29).string('Select Profession and Discipline of Individuals Trained (4)').style(styleYellow);
+      ws.cell(2, 30).string('Enter # Trained in this Profession and Discipline').style(styleYellow);
+      ws.cell(2, 31).string('Select Profession and Discipline of Individuals Trained (5)').style(styleYellow);
+      ws.cell(2, 32).string('Enter # Trained in this Profession and Discipline').style(styleYellow);
+      ws.cell(2, 33).string('Select Profession and Discipline of Individuals Trained (6)').style(styleYellow);
+      ws.cell(2, 34).string('Enter # Trained in this Profession and Discipline').style(styleYellow);
+    ws.cell(2, 35).string('Enter Remaining # of Trainees for this Course').style(styleYellow);
     
     var row = 3;
     for (var i = 0; i < courses.length; i++){
       var c = courses[i];
       ws.cell(row, 1).string(c.lps).style({ alignment: {wrapText: true} });
       ws.cell(row, 2).date(new Date(c.reportingPeriodFrom));
-      ws.cell(row, 3).date(new Date(c.dateOfTraining));
-      ws.cell(row, 4).string(c.contactName).style({ alignment: {wrapText: true} });
-      ws.cell(row, 5).string(c.courseName).style({ alignment: {wrapText: true} });
-      ws.cell(row, 6).bool(c.approvedContEd);
-      ws.cell(row, 7).number(c.durationHours);
-      ws.cell(row, 8).number(c.numTimesOffered);
-      ws.cell(row, 9).string(c.deliveryMode).style({ alignment: {wrapText: true} });
-      ws.cell(row, 10).string(c.partnerships1).style({ alignment: {wrapText: true} });
-      ws.cell(row, 11).string(c.partnerships2).style({ alignment: {wrapText: true} });
-      ws.cell(row, 12).string(c.partnerships3).style({ alignment: {wrapText: true} });
-      ws.cell(row, 13).string(c.partnerships4).style({ alignment: {wrapText: true} });
-      ws.cell(row, 14).bool(c.locationDataAvail);
-      ws.cell(row, 15).number(c.numTrainedPrimaryCare);
-      ws.cell(row, 16).number(c.numTrainedMedUnderServed);
-      ws.cell(row, 17).number(c.numTrainedRural);
-      ws.cell(row, 18).string(c.coursePrimaryTopicArea).style({ alignment: {wrapText: true} });
-      ws.cell(row, 19).string(c.primaryCompetency).style({ alignment: {wrapText: true} });
-      ws.cell(row, 20).string(c.competencyTier).style({ alignment: {wrapText: true} });
-      ws.cell(row, 21).number(c.numTrained);
-      ws.cell(row, 22).string(c.profession1).style({ alignment: {wrapText: true} });
-      ws.cell(row, 23).number(c.numProf1);
-      ws.cell(row, 24).string(c.profession2).style({ alignment: {wrapText: true} });
-      ws.cell(row, 25).number(c.numProf2);
-      ws.cell(row, 26).string(c.profession3).style({ alignment: {wrapText: true} });
-      ws.cell(row, 27).number(c.numProf3);
-      ws.cell(row, 28).string(c.profession4).style({ alignment: {wrapText: true} });
-      ws.cell(row, 29).number(c.numProf4);
-      ws.cell(row, 30).string(c.profession5).style({ alignment: {wrapText: true} });
-      ws.cell(row, 31).number(c.numProf5);
-      ws.cell(row, 32).string(c.profession6).style({ alignment: {wrapText: true} });
-      ws.cell(row, 33).number(c.numProf6);
-      ws.cell(row, 34).number(c.numProfOther);
+      ws.cell(row, 3).date(new Date(c.reportingPeriodTo));
+      
+      if (c.dateOfTraining) {
+        ws.cell(row, 4).date(new Date(c.dateOfTraining));
+      } else {
+        ws.cell(row, 4).string("NONE");
+      }
+      
+      ws.cell(row, 5).string(c.contactName).style({ alignment: {wrapText: true} });
+      ws.cell(row, 6).string(c.courseName).style({ alignment: {wrapText: true} });
+      ws.cell(row, 7).bool(c.approvedContEd);
+      ws.cell(row, 8).number(c.durationHours);
+      ws.cell(row, 9).number(c.numTimesOffered);
+      ws.cell(row, 10).string(c.deliveryMode).style({ alignment: {wrapText: true} });
+      ws.cell(row, 11).string(c.partnerships1).style({ alignment: {wrapText: true} });
+      ws.cell(row, 12).string(c.partnerships2).style({ alignment: {wrapText: true} });
+      ws.cell(row, 13).string(c.partnerships3).style({ alignment: {wrapText: true} });
+      ws.cell(row, 14).string(c.partnerships4).style({ alignment: {wrapText: true} });
+      ws.cell(row, 15).bool(c.locationDataAvail);
+      ws.cell(row, 16).number(c.numTrainedPrimaryCare);
+      ws.cell(row, 17).number(c.numTrainedMedUnderServed);
+      ws.cell(row, 18).number(c.numTrainedRural);
+      ws.cell(row, 19).string(c.coursePrimaryTopicArea).style({ alignment: {wrapText: true} });
+      ws.cell(row, 20).string(c.primaryCompetency).style({ alignment: {wrapText: true} });
+      ws.cell(row, 21).string(c.competencyTier).style({ alignment: {wrapText: true} });
+      ws.cell(row, 22).number(c.numTrained);
+      ws.cell(row, 23).string(c.profession1).style({ alignment: {wrapText: true} });
+      ws.cell(row, 24).number(c.numProf1);
+      ws.cell(row, 25).string(c.profession2).style({ alignment: {wrapText: true} });
+      ws.cell(row, 26).number(c.numProf2);
+      ws.cell(row, 27).string(c.profession3).style({ alignment: {wrapText: true} });
+      ws.cell(row, 28).number(c.numProf3);
+      ws.cell(row, 29).string(c.profession4).style({ alignment: {wrapText: true} });
+      ws.cell(row, 30).number(c.numProf4);
+      ws.cell(row, 31).string(c.profession5).style({ alignment: {wrapText: true} });
+      ws.cell(row, 32).number(c.numProf5);
+      ws.cell(row, 33).string(c.profession6).style({ alignment: {wrapText: true} });
+      ws.cell(row, 34).number(c.numProf6);
+      ws.cell(row, 35).number(c.numProfOther);
 
       row += 1;
     }
@@ -666,5 +715,19 @@ module.exports.generateExcelFile = function(callback){
     var fileName = "shareableEhbReport.xlsx";
     wb.write(fileName);
     callback(null, fileName);
+  });
+};
+
+module.exports.listReportsByUser = function(id, callback){
+  EhbCourse.find({reportOwner: id}, 'reportName', function(err, courses){
+    if (err) throw err;
+    callback(null, courses);
+  });
+};
+
+module.exports.deleteCourses = function(ids, callback){
+  EhbCourse.remove({'_id': {$in: ids}}, function(err, data){
+    if (err) throw err;
+    callback(null, data);
   });
 };

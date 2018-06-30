@@ -21,7 +21,7 @@ router.get('/verify', ensureAdmin, function(req, res){
   });
 });
 
-router.post('/verify', ensureAdmin, function(req, res){
+router.post('/verify', ensureAdmin, function(req, res){ 
     User.updatePermissions(req.body, function(err){
       if(err) throw err;
       res.redirect('/users/verify');

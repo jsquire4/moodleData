@@ -35,26 +35,20 @@
 
 // SET PORT AND PUBLIC DIRECTORIES
   app.disable('x-powered-by');
-  app.set('port', process.env.PORT || 3000);
-  app.use(express.static(__dirname + '/public'));
 
+// Disable line below on IIS servers
+app.set('port', process.env.PORT || process.env.APP_PORT);
+
+app.use(express.static(__dirname + '/public'));
 
 // DATABASE CONNECTION FOR LOGIN
-  mongoose.connect('mongodb://' + process.env.MLAB_USER + ':' + process.env.MLAB_PASS + process.env.MLAB_HOST);
+  mongoose.connect('mongodb://' + process.env.DB_USER + ':' + process.env.DB_PASS + process.env.DB_HOST);
   var db = mongoose.connection;
   
-
 // MIDDLEWARE
   var fs = require('fs');
   var util = require('util');
-  var log_file = fs.createWriteStream(__dirname + '/debug.log', {flags : 'w'});
-  var log_stdout = process.stdout;
-
-  console.log = function(d) { //
-    log_file.write(util.format(d) + '\n');
-    log_stdout.write(util.format(d) + '\n');
-  };
-
+  
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({extended: false}));
   app.use(cookieParser());
@@ -65,7 +59,7 @@
     saveUninitialized: false,
     cookie: { secure: false },
     store: new MongoStore({
-    url: 'mongodb://' + process.env.MLAB_USER + ':' + process.env.MLAB_PASS + process.env.MLAB_HOST,
+    url: 'mongodb://' + process.env.DB_USER + ':' + process.env.DB_PASS + process.env.DB_HOST,
     collection: 'sessions'
   })
   }));
@@ -102,20 +96,6 @@
   });
 
 
-// IP Restrictions since InfoSec can't be bothered
-  var ips = [[process.env.IP_RANGE_1, process.env.IP_RANGE_2], '::1'];
-  app.use(ipfilter(ips, {mode: 'allow'}));
-
-  app.use(function(err, req, res, _next) {
-    console.log('Error handler', err);
-    if(err){
-      res.status(401);
-    }else{
-      res.status(err.status || 500);
-    }
-    res.render('401');
-  });
-
 // ROUTING
   app.use('/', routes);
   app.use('/reports', reports);
@@ -134,6 +114,8 @@
   });
 
 // PORT LISTENING 
+  app.listen(process.env.PORT);
+  // Disable function below on Microsoft servers
   app.listen(app.get('port'), function(){
     console.log("Express started at http://localhost:" + app.get('port') + " Press Ctrl-C to terminate");
   });

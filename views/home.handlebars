@@ -16,10 +16,11 @@
     <div class = "col-sm-4 user-logged-in">
       <div class = "info-home-bloc">
         <h2 class = "greeting-banner mt-4">Hello {{user.firstname}}!</h2>
-        <p class = "other-info-home">This might be another place to store some information that you need to know.  There might even be a button to take you there.</p>
-        <p class = "other-info-home">Of course this is all theoretical and doesn't do anything</p>
+        <p class = "other-info-home">This site is continuously improving its functionality, if you have any questions or concerns submit a support ticket <a href = "/support">here.</a></p>
+        <br />
+        <p class = "other-info-home">Click the button below to continue to the reports splash page</p>
       </div>
-      <a href="#" class="btn btn-danger btn-lg">Red Pill Me Morpheus</a>
+      <a href="/reports/index" class="btn btn-danger btn-lg">Make a New Report</a>
     </div>
   {{else}}
     <div class="col-sm-4 user-login-home">
@@ -39,9 +40,9 @@
   {{/if}}
 </div>
 <!-- /.row -->
-
+<hr />
 <div class="row bottom-frontpage-block">
-  <div class="col-sm-4 my-4">
+  {{!-- <div class="col-sm-4 my-4">
     <div class="card">
       <div class = "card-flex-protector">
         <img class="card-img-top-custom" src="/img/code.jpg" alt="">
@@ -54,7 +55,7 @@
         <a href="#" class="btn btn-primary">Go to app</a>
       </div>
     </div>
-  </div>
+  </div> --}}
   <div class="col-sm-4 my-4">
     <div class="card">
       <div class = "card-flex-protector">
@@ -65,7 +66,7 @@
         </div>
       </div>
       <div class="card-footer">
-        <a href="#" class="btn btn-primary">Continue working</a>
+        <a href="/reports/allreports" class="btn btn-primary">Continue working</a>
       </div>
     </div>
   </div>
@@ -74,8 +75,8 @@
       <div class = "card-flex-protector">
         <img class="card-img-top-custom" src="/img/support.jpg" alt="">
         <div class="card-body">
-          <h4 class="card-title">Questions? Comments? Liabilities?</h4>
-          <p class="card-text">If you have any questions, comments, or find a bug please fill out the form and the support team will try to help you as soon as possible.</p>
+          <h4 class="card-title">Questions? Comments?</h4>
+          <p class="card-text">If you have any questions, comments, or find a bug please fill out the form, and the support team will try to help you as soon as possible.</p>
         </div>
       </div>
       <div class="card-footer">

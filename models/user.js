@@ -1,8 +1,7 @@
 var mongoose = require('mongoose');
 var bcrypt = require('bcryptjs');
+var EhbReport = require("../models/ehb");
 var Schema = mongoose.Schema;
- 
-
 // Schema
 
 var userSchema = new Schema({
@@ -36,6 +35,16 @@ var userSchema = new Schema({
   admin: {
       type: Boolean,
       default: false
+  },
+
+  reportIds: {
+    type: Array,
+    default: []
+  },
+
+  lms: {
+    type: String,
+    default: "None"
   }
 
 });
@@ -48,7 +57,6 @@ function changePermission (id, permission, callback){
     if(err) throw err;
     callback(null);
   });
-
 }
 
 module.exports.createUser = function(newUser, callback) {
@@ -58,24 +66,24 @@ module.exports.createUser = function(newUser, callback) {
         newUser.save(callback);
     });
   });
-}
+};
 
 module.exports.getUserByUsername = function(username, callback){
   var query = {username: username};
   return User.findOne(query, callback);
-}
+};
 
 module.exports.comparePassword = function(compPass, hash, callback){
   bcrypt.compare(compPass, hash, function(err, isMatch) {
     if(err) throw err;
     callback(null, isMatch);
   });
-}
+};
 
 module.exports.getUserById = function(id, callback){
   User.findById(id, callback);
   console.log(id);
-}
+};
 
 module.exports.getUsersList = function(callback){
   
@@ -83,8 +91,7 @@ module.exports.getUsersList = function(callback){
     if(err) throw err;
     callback(null, docs);    
   });
-
-}
+};
 
 module.exports.updatePermissions = function(changes, callback){
 
@@ -117,13 +124,8 @@ module.exports.updatePermissions = function(changes, callback){
     });
   }
   callback(null);
-}
+};
   
-
-
-
-
-
 
 
 

@@ -1,57 +1,48 @@
 var express = require('express');
 var router = express.Router();
-
-var Ticket = require("../models/support");
+var bodyParser = require('body-parser');
+var sanitize = require('mongo-sanitize');
+var sendgrid = require('sendgrid');
+var handlebars = require('express-handlebars');
+var hogan = require('hogan.js');
+var fs = require('fs');
+var helpers = require('handlebars-helpers')();
+var url = require('url');
+var mongoose = require('mongoose');
+var nodemailer = require('nodemailer');
+var template = fs.readFileSync("./views/email_layouts/supportEmail.hjs", "utf-8");
+var compiledTemplate = hogan.compile(template);
 var User = require("../models/user");
 
+var transporter = nodemailer.createTransport({
+  host: 'smtp.nephtc.org',
+  port: 25,
+  secure: false,
+  auth: {
+    user: process.env.MAIL_USER,
+    pass: process.env.MAIL_PASS
+  },
+  tls:  {
+    rejectUnauthorized: false
+  }
+});
 
 router.get('/', isLoggedIn, function(req, res){
   res.render('support');
 });
 
-router.get('/submitted', function(req, res){
+router.get('/submitted', isLoggedIn, function(req, res){
   res.render('submitted');
-});
-
-router.get('/tickets', isLoggedIn, function(req, res){
-  var user = req.user;
-
-  Ticket.getTickets(user, function(err, data){
-    if (err) throw err;
-    debugger;
-    res.render('tickets', {data: data});
-  });
-});
-
-router.get('/view/:id', isLoggedIn, function(req, res){
-  var ticket = Ticket.getTicketById(ticketId, function(err, ticket){
-    return ticket;
-  });
-  render('ticketview', {ticket: ticket});
-});
-
-router.get('/update/:id', ensureAdmin, function(req, res){
-
-  var ticket = Ticket.getTicketById(ticketId, function(err, ticket){
-    return ticket;
-  });
-
-  render('ticketupdate', {ticket: ticket});
-});
-
-router.put('/update/:id', ensureAdmin, function(req, res){
-  // TO DO: Allow method of updating support ticket
-  render('ticketupdate', {ticket: ticket});
 });
 
 router.post('/', isLoggedIn, function(req, res){
   var user = req.user;
-  var userid = req.user.id;
+  var userid = user.id;
   var username = user.username;
   var fullname = user.firstname + " " + user.lastname;
   var email = user.email;
-  var subject = req.body.subject;
-  var body = req.body.body;
+  var ticketSubject = req.body.subject;
+  var ticketBody = req.body.body;
   var submitted = Date.now();
 
   // VALIDATION
@@ -66,26 +57,26 @@ router.post('/', isLoggedIn, function(req, res){
     });
 
   } else {
-    
-    var newTicket = new Ticket ({
-      userid: userid,
-      username: username,
-      fullname: fullname,
-      email: email,
-      subject: subject,
-      body: body,
-      submitted: submitted,
-      resolved: false,
-      message: "The admin has been notified and will be addressing this shortly"
-    });
 
-    Ticket.createTicket(newTicket, function(err, data){
-      if(err) throw err;
-    });
+    var mailOptions = {
+      from: 'New England Public Health Training Center <noreply@nephtc.org>',
+      to: 'jsquire4@bu.edu',
+      subject: 'NEPHTC Reports - Support Request: ' + ticketSubject,
+      html: compiledTemplate.render({userEmail: email, fullname: fullname, ticketSubject: ticketSubject, ticketBody: ticketBody})
+    };
 
-    req.flash('success_msg', 'Support Ticket Submitted');
-    res.redirect('/support/submitted');
-  }
+    transporter.sendMail(mailOptions, function(err, res){
+        if (err) {
+          res.sendStatus(501);
+          console.log(err);
+        } else {
+          console.log(res);
+        }      
+      });
+
+      req.flash('success_msg', 'Support Ticket Submitted');
+      res.redirect('/support/submitted');
+    }
 });
 
 function ensureAdmin(req, res, next){

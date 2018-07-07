@@ -51,7 +51,7 @@ router.post('/report', ensureVerification, function(req, res){
           if (err) throw err;
           EhbReport.listCourses(ids, function(err, courses){
             if (err) throw err;
-            res.render('ehbReportCreator', {reportId: reportId, courses: courses, reportName: reportName, returningToSaved: false });
+            res.render('ehbReportCreator', {toDate: toDate, fromDate: fromDate, reportId: reportId, courses: courses, reportName: reportName, returningToSaved: false });
           });
         });
       });

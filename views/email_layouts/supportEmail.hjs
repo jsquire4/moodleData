@@ -2,7 +2,7 @@
 <html>
 <body>
   <div>
-    <p>From: {{firstname}} {{lastname}}</p>
+    <p>From: {{fullname}}</p>
     <p>Email: {{userEmail}}</p>
     <p>Subject: {{ticketSubject}}</p>
     <p>Body: {{ticketBody}}</p>

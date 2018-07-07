@@ -40,7 +40,7 @@ router.post('/', isLoggedIn, function(req, res){
   var userid = user.id;
   var username = user.username;
   var fullname = user.firstname + " " + user.lastname;
-  var email = user.email;
+  var userEmail = user.email;
   var ticketSubject = req.body.subject;
   var ticketBody = req.body.body;
   var submitted = Date.now();
@@ -62,7 +62,7 @@ router.post('/', isLoggedIn, function(req, res){
       from: 'New England Public Health Training Center <noreply@nephtc.org>',
       to: 'jsquire4@bu.edu',
       subject: 'NEPHTC Reports - Support Request: ' + ticketSubject,
-      html: compiledTemplate.render({userEmail: email, fullname: fullname, ticketSubject: ticketSubject, ticketBody: ticketBody})
+      html: compiledTemplate.render({userEmail: userEmail, fullname: fullname, ticketSubject: ticketSubject, ticketBody: ticketBody})
     };
 
     transporter.sendMail(mailOptions, function(err, res){

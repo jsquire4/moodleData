@@ -4,6 +4,7 @@ var Reporter = require("../models/reports");
 var EhbReport = require("../models/ehb");
 var CmReport = require("../models/commonMetrics");
 var UserReport = require("../models/userReports");
+var AuditReport = require("../models/auditCourse");
 var xl = require("excel4node");
 var fs = require('fs');
 
@@ -71,7 +72,20 @@ router.post('/report', ensureVerification, function(req, res){
         });
       });
     });
-
+  } else if (reportType == "audit") {
+    AuditReport.createCourses(fromDate, toDate, reportName, reportOwner, ownerFirst, ownerLast, reportLMS, reportSharingOptions, function(err, report){
+      AuditReport.saveCoursesToUserReport(reportName, reportType, reportOwner, ownerFirst, ownerLast, reportLMS, reportSharingOptions, function(err, data){
+        var reportId = data._id;
+        if (err) throw err;
+        UserReport.getCourseReportIds(reportName, reportOwner, function(err, ids){
+          if (err) throw err;
+          AuditReport.listCourses(ids, function(err, courses){
+            if(err) throw err;
+            res.render('auditReport', {reportId: reportId, courses: courses[0]._doc.coursesAndStudents, reportName: reportName, fromDate: fromDate, toDate: toDate, returningToSave: false});
+          });
+        });
+      });
+    });
   } else {
     Reporter.getReport(fromDate, toDate, reportType, function(err, report){
       if (err) throw err;
@@ -84,7 +98,6 @@ router.post('/report', ensureVerification, function(req, res){
 router.get('/viewreport/:report_id', ensureVerification, function(req, res){
   UserReport.getReport(req.params.report_id, function(err, report){
     if (err) throw err;
-
     if (report.reportType == "ehb") {
       EhbReport.listCourses(report.reportData, function(err, courses){
         if (err) throw err;
@@ -95,7 +108,12 @@ router.get('/viewreport/:report_id', ensureVerification, function(req, res){
         if (err) throw err;
         res.render('commonMetrics', {reportId: req.params.report_id, courses: courses});
       });
-    } 
+    } else if (report.reportType == "audit") {
+      AuditReport.listCourses(report.reportData, function(err, courses){
+        if(err) throw err;
+        res.render('auditReport', {reportId: req.params.report_id, courses: courses[0]._doc.coursesAndStudents});
+      });
+    }
   });
 });
 
@@ -103,6 +121,7 @@ router.get('/viewreport/:report_id', ensureVerification, function(req, res){
 router.get('/deletereport/:report_id', ensureVerification, function(req, res){
   UserReport.getReport(req.params.report_id, function(err, report){
     if (err) throw err;
+
     if (report.reportType == "ehb"){
       EhbReport.deleteCourses(report.reportData, function(err, data){
         if (err) throw err;
@@ -118,8 +137,14 @@ router.get('/deletereport/:report_id', ensureVerification, function(req, res){
           res.redirect('/reports/index');
         });
       });
-    } else {
 
+    } else if (report.reportType == "audit"){
+      AuditReport.deleteCourses(report.reportData, function(err, data){
+        if (err) throw err;
+        UserReport.deleteReport(req.params.report_id, function(err, data){
+          res.redirect('/reports/index');
+        });
+      });
     }
   });
 });
@@ -196,6 +221,23 @@ router.get('/generate-excel/:report_id', ensureVerification, function(req, res) 
 
     } else if (report.reportType == "commonMetrics") {
       CmReport.generateExcelFile(report.reportData, function(err, fileName){
+        setTimeout(function(){ // I don't know how else to do this right now, but it makes me cringe too don't worry
+          if (fs.existsSync(fileName)) {
+            res.download(fileName);
+          } else {
+            setTimeout(function(){
+              if (fs.existsSync(fileName)) {
+                res.download(fileName);
+              } else {
+                res.sendStatus(500);
+              }
+            }, 5000);
+          }
+        }, 3000);
+      });
+
+    } else if (report.reportType == "audit"){
+      AuditReport.generateExcelFile(report.reportData, function(err, fileName){
         setTimeout(function(){ // I don't know how else to do this right now, but it makes me cringe too don't worry
           if (fs.existsSync(fileName)) {
             res.download(fileName);

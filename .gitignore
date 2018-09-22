@@ -3,9 +3,7 @@ queries.txt
 *~
 .DS_store
 .env
-ehb.xls
-shareableEhbReport.xlsx
-commonMetricsReport.xlsx
+*.xlsx
 error.log
 combined.log
 debug.log

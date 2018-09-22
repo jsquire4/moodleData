@@ -3,20 +3,31 @@
  
 {{#each courses}}
   {{#eq this.courseDataCompleted false}}
-    <div class = "cm-course-select-line cm-incomplete">
-      <i id = "formCheck-{{this.id}}" class="ebh-fa-times fa fa-times" aria-hidden="true"></i>
-    {{else}}
-    <div class = "cm-course-select-line cm-complete">
-      <i id = "formCheck-{{this.id}}" class="cm-fa-check fa fa-check" aria-hidden="true"></i>
-    {{/eq}}
+  <div class = "cm-course-select-line cm-incomplete">
+    <i id = "formCheck-{{this.id}}" class="ebh-fa-times fa fa-times" aria-hidden="true"></i>
+  {{else}}
+  <div class = "cm-course-select-line cm-complete">
+    <i id = "formCheck-{{this.id}}" class="cm-fa-check fa fa-check" aria-hidden="true"></i>
+  {{/eq}}
+
+  {{#eq this.visible false}}
+    <a class = "course-link cm-course-select-link" data-toggle = "modal" data-target = "#form-{{this.courseId}}" data-internalid = "{{this.id}}" >{{this.courseName}} [COURSE UNLISTED]</a>
+  {{else}}
     <a class = "course-link cm-course-select-link" data-toggle = "modal" data-target = "#form-{{this.courseId}}" data-internalid = "{{this.id}}" >{{this.courseName}}</a>
+  {{/eq}}
+    
   </div>
 
   <div class="modal fade" id="form-{{this.courseId}}" tabindex="-1" role="dialog" aria-labelledby="cmCourseName" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content modal-lg">
         <div class="modal-header modal-lg">
-          <h5 class="modal-title" id="cmCourseName">{{this.courseName}}</h5>
+          {{#eq this.visible false}}
+            <h5 class="modal-title" id="cmCourseName">{{this.courseName}} [COURSE UNLISTED]</h5>
+          {{else}}
+            <h5 class="modal-title" id="cmCourseName">{{this.courseName}}</h5>
+          {{/eq}}
+          
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>

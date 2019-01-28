@@ -641,10 +641,7 @@ module.exports.createCourses = function(fromDate, toDate, reportName, reportOwne
 
   queryDB(query, function(err, results) { // Query all courses
     var allCourses = parseCourseToACF(results);
-
-    debugger;
-
-
+    
     query = getQuery("feedbackData");
   
     if (query) { 
